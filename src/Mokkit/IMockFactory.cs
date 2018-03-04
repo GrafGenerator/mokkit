@@ -2,6 +2,8 @@
 {
     public interface IMockFactory
     {
-        object CreateMock<TMock>();
+        TMock CreateMock<TMock>();
+
+        TMocked ResolveMocked<TMocked>(object mock);
     }
 }

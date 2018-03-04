@@ -2,7 +2,7 @@
 
 namespace Mokkit
 {
-    public interface IMokkit
+    public interface IMokkit<TToken>
     {
         TMock Resolve<TMock>()
             where TMock : class;
@@ -10,7 +10,7 @@ namespace Mokkit
         TMock ResolveTokenized<TMock>(ITokenizedMock<TMock> token)
             where TMock : class;
 
-        IMokkit Customize<TMock>(Action<TMock> customizeFn)
+        IMokkit<TToken> Customize<TMock>(Action<TMock> customizeFn)
             where TMock : class;
     }
 }

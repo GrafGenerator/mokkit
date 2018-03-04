@@ -4,47 +4,47 @@ using System.Collections.Generic;
 namespace Mokkit
 {
     /// <summary>
-    /// Container for a set of objects (mocks) that can be instantiated without any direct dependencies resolution.
-    /// Any possible dependency resolution here for such kind of objects should be hidden in <see cref="IMockFactory"/>.
+    ///     Container for a set of objects (mocks) that can be instantiated without any direct dependencies resolution.
+    ///     Any possible dependency resolution here for such kind of objects should be hidden in <see cref="IMockFactory" />.
     /// </summary>
-    internal class Mokkit : IMokkit
+    internal class Mokkit<TToken> : IMokkit<TToken>
     {
         private readonly IMockFactory _mockFactory;
-        private readonly IDictionary<Type, object> _pack = new Dictionary<Type, object>();
+
+        private readonly IDictionary<IDiscriminator<TToken>, object> _pack =
+            new Dictionary<IDiscriminator<TToken>, object>();
 
         public Mokkit(IMockFactory mockFactory)
         {
             _mockFactory = mockFactory;
         }
 
-        public TMock Resolve<TMock>()
+        public IMokkit<TToken> Customize<TMock>(IDiscriminator<TToken> discriminator, Action<TMock> customizeFn)
             where TMock : class
         {
             EnsureMockPresent<TMock>();
-            return _pack[typeof(TMock)] as TMock;
-        }
-
-        public TMock ResolveTokenized<TMock>(ITokenizedMock<TMock> token)
-            where TMock : class
-        {
-            EnsureMockPresent<TMock>();
-            return _pack[token.GetType()] as TMock;
-        }
-
-        public IMokkit Customize<TMock>(Action<TMock> customizeFn)
-            where TMock : class
-        {
-            EnsureMockPresent<TMock>();
-            var mock = _pack[typeof(TMock)] as TMock;
+            var mock = _pack[discriminator] as TMock;
 
             customizeFn(mock);
 
             return this;
         }
 
-        private void EnsureMockPresent<TMock>()
+        public TMocked Resolve<TMocked>(IDiscriminator<TToken> discriminator)
+            where TMocked : class
         {
-            if (!_pack.ContainsKey(typeof(TMock))) _pack.Add(typeof(TMock), _mockFactory.CreateMock<TMock>());
+            EnsureMockPresent(discriminator);
+            var mock = _pack[discriminator];
+
+            if (mock == null) throw new InvalidOperationException("No mock created, fatal error.");
+
+            var mocked = _mockFactory.ResolveMocked<TMocked>(mock);
+            return mocked;
+        }
+
+        private void EnsureMockPresent(IDiscriminator<TToken> discriminator)
+        {
+            if (!_pack.ContainsKey(discriminator)) _pack.Add(discriminator, _mockFactory.CreateMock<TMock>());
         }
     }
 }

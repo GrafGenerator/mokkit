@@ -1,10 +1,16 @@
 ﻿namespace Mokkit
 {
-    public static class Scenery
+    public class Scenery<TMokkitToken>
     {
-        public static IMokkit Mokkit(IMockFactory factory)
+        private readonly IMockFactory _mockFactory;
+
+        public Scenery(IMockFactory mockFactory)
         {
-            return new Mokkit(factory);
+            _mockFactory = mockFactory;
+
+            Mokkit = new Mokkit<TMokkitToken>(mockFactory);
         }
+
+        public IMokkit<TMokkitToken> Mokkit { get; }
     }
 }
