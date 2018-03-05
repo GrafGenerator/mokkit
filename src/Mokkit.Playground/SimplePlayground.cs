@@ -1,4 +1,5 @@
 ﻿using System;
+using Mokkit.Playground.SampleScenery;
 using Mokkit.Playground.Setups;
 
 namespace Mokkit.Playground
@@ -15,7 +16,7 @@ namespace Mokkit.Playground
 
         public void Test()
         {
-            var actor = _stage.Enter<Type>();
+            var actor = _stage.Enter<SampleActor>();
         }
 
         private static IStage<string> NewStage()
