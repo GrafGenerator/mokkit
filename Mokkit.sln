@@ -10,6 +10,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 		.gitignore = .gitignore
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mokkit.Capture", "src\Mokkit.Capture\Mokkit.Capture.csproj", "{E85E6993-FC29-4671-941D-3EEA4F0409CC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{91295462-5E26-40A1-9029-41D97CD36BDB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91295462-5E26-40A1-9029-41D97CD36BDB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91295462-5E26-40A1-9029-41D97CD36BDB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E85E6993-FC29-4671-941D-3EEA4F0409CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E85E6993-FC29-4671-941D-3EEA4F0409CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E85E6993-FC29-4671-941D-3EEA4F0409CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E85E6993-FC29-4671-941D-3EEA4F0409CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
