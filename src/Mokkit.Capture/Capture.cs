@@ -4,7 +4,7 @@ namespace Mokkit.Capture;
 
 public class Capture<T>: ICaptureInitializer<T>
 {
-    private T? _value;
+    public T? Value { get; private set; }
 
     internal Capture()
     {
@@ -12,12 +12,12 @@ public class Capture<T>: ICaptureInitializer<T>
 
     public static implicit operator T(Capture<T> capture)
     {
-        return capture._value ?? throw new InvalidOperationException("Capture is not initialized");
+        return capture.Value ?? throw new InvalidOperationException("Capture is not initialized");
     }
 
-    void ICaptureInitializer<T>.SetValue(T value)
+    void ICaptureInitializer<T>.Set(T value)
     {
-        _value = value;
+        Value = value;
     }
 }
 

@@ -9,34 +9,58 @@ namespace Mokkit.Playground.CaptureTests;
 public class CapturePlaygroundTests
 {
     [Test]
-    public void TestCapture()
+    public async Task TestCapture()
     {
+        // Arrange
+        var testInnerValue = 1;
         
+        var arrange = ArrangeFoo(testInnerValue, out var foo)
+            .Then(ArrangeBar(foo, out var bar));
+
+        await ArrangeAsync(arrange);
+        
+        // Act
+        
+        // Assert
+        Assert.That(bar.Value, Is.Not.Null);
+        Assert.That(bar.Value.GetValue(), Is.EqualTo(testInnerValue));
     }
 
-    private void PrepareFoo(int innerValue, out Capture<Foo> fooCapture)
+    private ArrangeFn ArrangeFoo(int innerValue, out Capture<Foo> fooCapture)
     {
         var capture = Capture.Capture.Start(out fooCapture);
-
-        capture.SetValue(new Foo(innerValue));
+        
+        return () =>
+        {
+            capture.Set(new Foo(innerValue));
+        };
     }
 
-    private async Task PrepareBar(Capture<Foo> foo, out Capture<Bar> barCapture)
+    private ArrangeAsyncFn ArrangeBar(Capture<Foo> foo, out Capture<Bar> barCapture)
     {
         var capture = Capture.Capture.Start(out barCapture);
 
-        await ExecuteAsync(() =>
+        return async () =>
         {
-            capture.SetValue(new Bar(foo));
-        });
+            await Task.Delay(1); // async arrange
+            capture.Set(new Bar(foo));
+        };
     }
 
 
-    private async Task ExecuteAsync(Func<Task> action)
+    private async Task ArrangeAsync(ITestArrange arrange)
     {
-        // do some async stuff
+        if (arrange is not ITestArrangeProvider provider)
+        {
+            throw new InvalidOperationException("Specified test arrange has no provider implementation");
+        }
 
-        await action();
+        var arrangeFns = provider.GetArrangeFunctions();
+
+        foreach (var arrangeFn in arrangeFns)
+        {
+            await arrangeFn();
+        }
     }
     
     private class Foo
