@@ -26,6 +26,24 @@ public class CapturePlaygroundTests
         Assert.That(bar.Value.GetValue(), Is.EqualTo(testInnerValue));
     }
 
+    [Test]
+    public async Task TestCustomizedArrange()
+    {
+        // Arrange
+        var testInnerValue = 1;
+        
+        var arrange = ArrangeFoo(testInnerValue, out var foo)
+            .Then(ArrangeBar(foo, out var bar));
+
+        await ArrangeAsync(arrange);
+        
+        // Act
+        
+        // Assert
+        Assert.That(bar.Value, Is.Not.Null);
+        Assert.That(bar.Value.GetValue(), Is.EqualTo(testInnerValue));
+    }
+    
     private ArrangeFn ArrangeFoo(int innerValue, out Capture<Foo> fooCapture)
     {
         var capture = Capture.Capture.Start(out fooCapture);
@@ -61,27 +79,5 @@ public class CapturePlaygroundTests
         {
             await arrangeFn();
         }
-    }
-    
-    private class Foo
-    {
-        public int Value { get; }
-
-        public Foo(int value)
-        {
-            Value = value;
-        }
-    }
-
-    private class Bar
-    {
-        public Foo Foo { get; }
-
-        public Bar(Foo foo)
-        {
-            Foo = foo;
-        }
-
-        public int GetValue() => Foo.Value;
     }
 }
