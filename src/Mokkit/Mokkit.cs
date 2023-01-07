@@ -22,7 +22,7 @@ namespace Mokkit
         public IMokkit<TToken> Customize<TMock>(IDiscriminator<TToken> discriminator, Action<TMock> customizeFn)
             where TMock : class
         {
-            EnsureMockPresent<TMock>();
+            // EnsureMockPresent<TMock>();
             var mock = _pack[discriminator] as TMock;
 
             customizeFn(mock);
@@ -44,7 +44,22 @@ namespace Mokkit
 
         private void EnsureMockPresent(IDiscriminator<TToken> discriminator)
         {
-            if (!_pack.ContainsKey(discriminator)) _pack.Add(discriminator, _mockFactory.CreateMock<TMock>());
+            // if (!_pack.ContainsKey(discriminator)) _pack.Add(discriminator, _mockFactory.CreateMock<TMock>());
+        }
+
+        public TMock Resolve<TMock>() where TMock : class
+        {
+            throw new NotImplementedException();
+        }
+
+        public TMock ResolveTokenized<TMock>(ITokenizedMock<TMock> token) where TMock : class
+        {
+            throw new NotImplementedException();
+        }
+
+        public IMokkit<TToken> Customize<TMock>(Action<TMock> customizeFn) where TMock : class
+        {
+            throw new NotImplementedException();
         }
     }
 }
