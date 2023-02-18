@@ -19,9 +19,9 @@ public class TestArrange : ITestArrange, ITestArrangeProvider
     
     internal TestArrange(ArrangeFn arrangeFn)
     {
-        _arrangeFns.Add(() =>
+        _arrangeFns.Add(host =>
         {
-            arrangeFn();
+            arrangeFn(host);
             return Task.CompletedTask;
         });
     }
@@ -39,9 +39,9 @@ public class TestArrange : ITestArrange, ITestArrangeProvider
     
     public ITestArrange Then(ArrangeFn arrangeFn)
     {
-        _arrangeFns.Add(() =>
+        _arrangeFns.Add(host =>
         { 
-            arrangeFn();
+            arrangeFn(host);
             return Task.CompletedTask;
         });
         
@@ -52,7 +52,7 @@ public class TestArrange : ITestArrange, ITestArrangeProvider
     {
         foreach (var arrangeFn in _arrangeFns)
         {
-            await arrangeFn();
+            await arrangeFn(_stage);
         }
     }
     
@@ -81,7 +81,6 @@ public class TestArrangeAwaiter : ITestArrangeAwaiter
     internal TestArrangeAwaiter(TestArrange arrange)
     {
         _action = arrange.DoArrangeAsync();
-        // _action.ConfigureAwait(false);
     }
     
     public void GetResult()

@@ -3,26 +3,15 @@ using System.Threading.Tasks;
 
 namespace Mokkit.Capture.Suite;
 
-public class TestStage
+public class TestStage: ITestHost
 {
-
     public ITestArrange Arrange()
     {
         return Mokkit.Capture.Arrange.Start(this);
     }
 
-    private async Task ArrangeAsync(ITestArrange arrange)
+    public Task ExecuteScopeAsync<TService>(Action<TService> actionFn)
     {
-        if (arrange is not ITestArrangeProvider provider)
-        {
-            throw new InvalidOperationException("Specified test arrange has no provider implementation");
-        }
-
-        var arrangeFns = provider.GetArrangeFunctions();
-
-        foreach (var arrangeFn in arrangeFns)
-        {
-            await arrangeFn();
-        }
+        throw new NotImplementedException();
     }
 }

@@ -12,6 +12,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mokkit.Capture", "src\Mokkit.Capture\Mokkit.Capture.csproj", "{E85E6993-FC29-4671-941D-3EEA4F0409CC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mokkit.DiStage", "src\Mokkit.DiStage\Mokkit.DiStage.csproj", "{97260137-0D0B-4B54-9BA2-A95EF3C9029B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{E85E6993-FC29-4671-941D-3EEA4F0409CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E85E6993-FC29-4671-941D-3EEA4F0409CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E85E6993-FC29-4671-941D-3EEA4F0409CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97260137-0D0B-4B54-9BA2-A95EF3C9029B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97260137-0D0B-4B54-9BA2-A95EF3C9029B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97260137-0D0B-4B54-9BA2-A95EF3C9029B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97260137-0D0B-4B54-9BA2-A95EF3C9029B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

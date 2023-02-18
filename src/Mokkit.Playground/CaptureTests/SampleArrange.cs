@@ -9,7 +9,7 @@ public static class SampleArrange
     {
         var capture = Capture.Capture.Start(out fooCapture);
         
-        return arrange.Then(() =>
+        return arrange.Then(_ =>
         {
             capture.Set(new Foo(innerValue));
         });
@@ -19,8 +19,24 @@ public static class SampleArrange
     {
         var capture = Capture.Capture.Start(out barCapture);
 
-        return arrange.Then(async () =>
+        return arrange.Then(async _ =>
         {
+            await Task.Delay(1); // async arrange
+            capture.Set(new Bar(foo));
+        });
+    }
+    
+    public static ITestArrange ArrangeWithService(this ITestArrange arrange, Capture<Foo> foo, out Capture<Bar> barCapture)
+    {
+        var capture = Capture.Capture.Start(out barCapture);
+
+        return arrange.Then(async host =>
+        {
+            await host.ExecuteScopeAsync<Foo>(foo1 =>
+            {
+                
+            });
+            
             await Task.Delay(1); // async arrange
             capture.Set(new Bar(foo));
         });

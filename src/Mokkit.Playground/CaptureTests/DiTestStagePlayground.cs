@@ -1,17 +1,18 @@
 using System.Threading.Tasks;
+using Mokkit.DiStage;
 using NUnit.Framework;
 
 namespace Mokkit.Playground.CaptureTests;
 
 [TestFixture]
-public class BasicPlaygroundTests: BasePlayground
+public class DiTestStagePlaygroundTests
 {
-    
+    private DiTestStage _stage;
     
     [SetUp]
     public void SetUp()
     {
-        
+        _stage = new DiTestStage();
     }
     
     [Test]
@@ -20,7 +21,7 @@ public class BasicPlaygroundTests: BasePlayground
         // Arrange
         var testInnerValue = 1;
 
-        await Stage.Arrange()
+        await _stage.Arrange()
             .ArrangeFoo(testInnerValue, out var foo)
             .ArrangeBar(foo, out var bar);
 
