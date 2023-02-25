@@ -32,7 +32,7 @@ public static class SampleArrange
 
         return arrange.Then(async host =>
         {
-            await host.ExecuteScopeAsync<Foo>(foo1 =>
+            await host.ExecuteAsync<Foo>(async foo1 =>
             {
                 
             });
