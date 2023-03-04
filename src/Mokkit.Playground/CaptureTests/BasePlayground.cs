@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+using Mokkit.Capture.Containers;
 using Mokkit.Capture.Suite;
 using NUnit.Framework;
 
@@ -8,8 +10,12 @@ public class BasePlayground
     protected TestStage Stage = null!;
 
     [OneTimeSetUp]
-    public void OneTimeSetUp()
+    public async Task OneTimeSetUp()
     {
-        Stage = new TestStage();
+        var builders = new IDependencyContainerBuilder[]{
+            new MicrosoftDiContainerBuilder()
+        };
+        
+        Stage = await TestStage.Create(builders);
     }
 }

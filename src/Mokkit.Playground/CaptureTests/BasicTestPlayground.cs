@@ -6,8 +6,6 @@ namespace Mokkit.Playground.CaptureTests;
 [TestFixture]
 public class BasicPlaygroundTests: BasePlayground
 {
-    
-    
     [SetUp]
     public void SetUp()
     {

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Mokkit.Capture.Containers;
 
 namespace Mokkit.Capture.Suite;
 
@@ -10,12 +11,12 @@ public class TestStage : ITestHost
     private readonly IEnumerable<IDependencyContainerBuilder> _builders;
     private IDependencyContainer[] _containers = Array.Empty<IDependencyContainer>();
 
-    public TestStage(IEnumerable<IDependencyContainerBuilder> builders)
+    private TestStage(IEnumerable<IDependencyContainerBuilder> builders)
     {
         _builders = builders;
     }
 
-    public async Task BuildContainers()
+    private async Task BuildContainers()
     {
         foreach (var container in _builders)
         {
@@ -42,94 +43,55 @@ public class TestStage : ITestHost
 
     public void ExecuteAsync<TService>(Action<TService> actionFn)
     {
-        var types = GetContainerMap(typeof(TService));
-        using var scope = new ScopeAggregator(types);
-
+        using var scope = BeginScope();
         actionFn(scope.Resolve<TService>());
     }
 
     public void ExecuteAsync<TService, TService2>(Action<TService, TService2> actionFn)
     {
-        var types = GetContainerMap(typeof(TService), typeof(TService2));
-        using var scope = new ScopeAggregator(types);
-
+        using var scope = BeginScope();
         actionFn(scope.Resolve<TService>(), scope.Resolve<TService2>());
     }
 
     public TOutput ExecuteAsync<TService, TOutput>(Func<TService, TOutput> actionFn)
     {
-        var types = GetContainerMap(typeof(TService));
-        using var scope = new ScopeAggregator(types);
-
+        using var scope = BeginScope();
         return actionFn(scope.Resolve<TService>());
     }
 
     public async Task ExecuteAsync<TService>(Func<TService, Task> actionFn)
     {
-        var container = FindContainer<TService>();
-        using var scope = container.BeginScope();
-
-        var service = container.Resolve<TService>();
-
-        await actionFn(service);
+        using var scope = BeginScope();
+        await actionFn(scope.Resolve<TService>());
     }
 
     public async Task<TOutput> ExecuteAsync<TService, TOutput>(Func<TService, Task<TOutput>> actionFn)
     {
-        var container = FindContainer<TService>();
-        using var scope = container.BeginScope();
-
-        var service = container.Resolve<TService>();
-
-        return await actionFn(service);
+        using var scope = BeginScope();
+        return await actionFn(scope.Resolve<TService>());
     }
 
-    private IDependencyContainer FindContainer<T>()
+    private ScopeAggregator BeginScope()
     {
-        var container = _containers
-            .FirstOrDefault(x => x.CanResolve<T>());
-
-        return container ?? throw new InvalidOperationException($"Cannot find container for type {typeof(T)}");
+        return new ScopeAggregator(_containers);
     }
 
-    private IReadOnlyCollection<TypeContainerPair> GetContainerMap(params Type[] types)
+    public static async Task<TestStage> Create(params IDependencyContainerBuilder[] builders)
     {
-        var typeContainerPairs = types
-            .Select(x =>
-            {
-                var container = _containers.FirstOrDefault(c => c.CanResolve(x)) ??
-                                     throw new InvalidOperationException($"Cannot find container for type {x}");
-                return new TypeContainerPair(x, container);
-            })
-            .ToArray();
+        var stage = new TestStage(builders);
+        await stage.BuildContainers();
 
-        return typeContainerPairs;
-    }
-
-    private record TypeContainerPair(Type Type, IDependencyContainer Container)
-    {
-        public Type Type { get; } = Type;
-
-        public IDependencyContainer Container { get; } = Container;
+        return stage;
     }
 
     private class ScopeAggregator : IDisposable
     {
-        private readonly Dictionary<Type, IDependencyContainer> _typeContainerMap;
-        private readonly List<IDisposable> _scopes = new();
+        private readonly Dictionary<Type, object> _resolveCache = new();
+        private readonly List<IDependencyContainerScope> _scopes = new();
 
-        public ScopeAggregator(IReadOnlyCollection<TypeContainerPair> typeMap)
+        public ScopeAggregator(IReadOnlyCollection<IDependencyContainer> containers)
         {
-            var containerMap = typeMap
-                .Select(x => x.Container)
-                .Distinct()
-                .ToDictionary(x => x.GetType());
-
-            _typeContainerMap = typeMap.ToDictionary(
-                x => x.Type,
-                x => containerMap[x.Container.GetType()]);
-
-            foreach (var container in containerMap.Values)
+            foreach (var container in containers)
             {
                 _scopes.Add(container.BeginScope());
             }
@@ -137,12 +99,25 @@ public class TestStage : ITestHost
 
         public T Resolve<T>()
         {
-            if (!_typeContainerMap.TryGetValue(typeof(T), out var container))
+            var type = typeof(T);
+
+            if (_resolveCache.TryGetValue(type, out var service))
             {
-                throw new InvalidOperationException($"Cannot find container for type {typeof(T)}");
+                return (T)service;
             }
 
-            return container.Resolve<T>();
+            var resolvedService = _scopes
+                .Select(x => x.TryResolve<T>())
+                .FirstOrDefault(x => x != null);
+            
+            if (resolvedService == null)
+            {
+                throw new InvalidOperationException($"Cannot find container for type {type}");
+            }
+
+            _resolveCache[type] = resolvedService;
+
+            return resolvedService;
         }
 
         public void Dispose()
