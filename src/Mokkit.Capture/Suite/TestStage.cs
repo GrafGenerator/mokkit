@@ -41,19 +41,19 @@ public class TestStage : ITestHost
         return Mokkit.Capture.Arrange.Start(this);
     }
 
-    public void ExecuteAsync<TService>(Action<TService> actionFn)
+    public void Execute<TService>(Action<TService> actionFn)
     {
         using var scope = BeginScope();
         actionFn(scope.Resolve<TService>());
     }
 
-    public void ExecuteAsync<TService, TService2>(Action<TService, TService2> actionFn)
+    public void Execute<TService, TService2>(Action<TService, TService2> actionFn)
     {
         using var scope = BeginScope();
         actionFn(scope.Resolve<TService>(), scope.Resolve<TService2>());
     }
 
-    public TOutput ExecuteAsync<TService, TOutput>(Func<TService, TOutput> actionFn)
+    public TOutput Execute<TService, TOutput>(Func<TService, TOutput> actionFn)
     {
         using var scope = BeginScope();
         return actionFn(scope.Resolve<TService>());

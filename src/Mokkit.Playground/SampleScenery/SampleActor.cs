@@ -1,4 +1,7 @@
-﻿namespace Mokkit.Playground.SampleScenery
+﻿using System.Threading.Tasks;
+using Mokkit.Playground.CaptureTests;
+
+namespace Mokkit.Playground.SampleScenery
 {
     public class SampleActor
     {
@@ -11,10 +14,10 @@
             _service2 = service2;
         }
 
-        public void Act()
+        public async Task Act(Foo foo)
         {
-            _service1.Call1();
-            _service2.Call2();
+            await _service1.Call(foo);
+            _service2.Call();
         }
     }
 }

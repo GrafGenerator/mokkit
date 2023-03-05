@@ -5,11 +5,11 @@ namespace Mokkit.Capture.Suite;
 
 public interface ITestHost
 {
-    void ExecuteAsync<TService>(Action<TService> actionFn);
+    void Execute<TService>(Action<TService> actionFn);
     
-    void ExecuteAsync<TService, TService2>(Action<TService, TService2> actionFn);
+    void Execute<TService, TService2>(Action<TService, TService2> actionFn);
 
-    TOutput ExecuteAsync<TService, TOutput>(Func<TService, TOutput> actionFn);
+    TOutput Execute<TService, TOutput>(Func<TService, TOutput> actionFn);
     
     Task ExecuteAsync<TService>(Func<TService, Task> actionFn);
 

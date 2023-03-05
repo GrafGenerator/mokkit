@@ -8,28 +8,46 @@ public class MicrosoftDiContainerBuilder : IDependencyContainerBuilder
 {
     private readonly IServiceCollection _serviceCollection = new ServiceCollection();
 
-    public Func<IServiceCollection, Task>? PreInitHook { get; set; }
+    private Func<IServiceCollection, Task>? PreInitFn { get; set; }
 
-    public Func<IServiceCollection, Task>? InitHook { get; set; }
+    private Func<IServiceCollection, Task>? InitFn { get; set; }
 
-    public Func<IServiceCollection, Task>? PreBuildHook { get; set; }
+    private Func<IServiceCollection, Task>? PreBuildFn { get; set; }
 
-    public Task PreInit()
+    Task IDependencyContainerBuilder.PreInit()
     {
-        return PreInitHook?.Invoke(_serviceCollection) ?? Task.CompletedTask;
+        return PreInitFn != null ? PreInitFn(_serviceCollection) : Task.CompletedTask;
     }
 
-    public Task Init()
+    Task IDependencyContainerBuilder.Init()
     {
-        return InitHook?.Invoke(_serviceCollection) ?? Task.CompletedTask;
+        return InitFn != null ? InitFn(_serviceCollection) : Task.CompletedTask;
     }
 
-    public Task PreBuild()
+    Task IDependencyContainerBuilder.PreBuild()
     {
-        return PreBuildHook?.Invoke(_serviceCollection) ?? Task.CompletedTask;
+        return PreBuildFn != null ? PreBuildFn(_serviceCollection) : Task.CompletedTask;
     }
 
-    public IDependencyContainer Build()
+    public MicrosoftDiContainerBuilder UsePreInit(Func<IServiceCollection, Task> fn)
+    {
+        PreInitFn = fn;
+        return this;
+    }
+    
+    public MicrosoftDiContainerBuilder UseInit(Func<IServiceCollection, Task> fn)
+    {
+        InitFn = fn;
+        return this;
+    }
+    
+    public MicrosoftDiContainerBuilder UsePreBuild(Func<IServiceCollection, Task> fn)
+    {
+        PreBuildFn = fn;
+        return this;
+    }
+
+    IDependencyContainer IDependencyContainerBuilder.Build()
     {
         var serviceProvider = _serviceCollection.BuildServiceProvider();
 
