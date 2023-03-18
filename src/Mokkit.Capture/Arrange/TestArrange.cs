@@ -5,9 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Mokkit.Capture.Suite;
 
-namespace Mokkit.Capture;
+namespace Mokkit.Capture.Arrange;
 
-public class TestArrange : ITestArrange, ITestArrangeProvider
+public class TestArrange : ITestArrange
 {
     private readonly TestStage _stage;
     private readonly List<ArrangeAsyncFn> _arrangeFns = new();
@@ -56,8 +56,6 @@ public class TestArrange : ITestArrange, ITestArrangeProvider
         }
     }
     
-    IReadOnlyCollection<ArrangeAsyncFn> ITestArrangeProvider.GetArrangeFunctions() => _arrangeFns;
-
     public ITestArrangeAwaiter GetAwaiter()
     {
         return new TestArrangeAwaiter(this);
@@ -70,7 +68,7 @@ public interface ITestArrangeAwaiter: INotifyCompletion
     void GetResult();
 }
 
-public class TestArrangeAwaiter : ITestArrangeAwaiter
+internal class TestArrangeAwaiter : ITestArrangeAwaiter
 {
     private readonly SynchronizationContext? _capturedContext = SynchronizationContext.Current;
     

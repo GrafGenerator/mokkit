@@ -14,10 +14,10 @@ namespace Mokkit.Playground.SampleScenery
             _service2 = service2;
         }
 
-        public async Task Act(Foo foo)
+        public async Task<int> Act(Foo foo)
         {
             await _service1.Call(foo);
-            _service2.Call();
+            return _service2.Call();
         }
     }
 }

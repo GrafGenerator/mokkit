@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Mokkit.Capture.Arrange;
 using Mokkit.Capture.Containers;
+using Mokkit.Capture.Inspect;
 using Mokkit.Capture.Suite;
 using Mokkit.Playground.SampleScenery;
 using NUnit.Framework;
@@ -22,10 +24,21 @@ public class BasePlayground
         Stage = await TestStage.Create(builders);
     }
 
+    protected ITestArrange Arrange => Stage.Arrange();
+
+    protected ITestInspect Inspect => Stage.Inspect();
+
+    protected virtual Task BuildAdditionalServices(IServiceCollection services)
+    {
+        return Task.CompletedTask;
+    }
+
     private async Task BuildServices(IServiceCollection services)
     {
-        services.AddScoped<IService1, Service1>();
+        services.AddSingleton<IService1, Service1>();
         services.AddSingleton<IService2, Service2>();
         services.AddScoped<SampleActor>();
+
+        await BuildAdditionalServices(services);
     }
 }

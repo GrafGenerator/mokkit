@@ -36,20 +36,21 @@ public class BasicPlaygroundTests: BasePlayground
         // Arrange
         var testInnerValue = 255;
 
-        await Stage.Arrange()
+        await Arrange
             .ArrangeFoo(testInnerValue, out var foo)
             .ArrangeBar(foo, out var bar);
 
         // Act
-        await Stage.ExecuteAsync<SampleActor>(async actor =>
-        {
-            await actor.Act(foo);
-        });
+        await Act(foo);
             
         // Assert
-        Stage.Execute<IService2>( service =>
-        {
-            Assert.That(service.IsCalled(), Is.True);
-        });
+        await Inspect
+            .Service1FooValue(Is.EqualTo(testInnerValue))
+            .Service2IsCalled(Is.True);
+    }
+
+    private async Task<int> Act(Foo foo)
+    {
+        return await Stage.ExecuteAsync<SampleActor, int>(async actor => await actor.Act(foo));
     }
 }

@@ -1,4 +1,4 @@
-namespace Mokkit.Capture;
+namespace Mokkit.Capture.Arrange;
 
 public static class ArrangeFnExtensions
 {
