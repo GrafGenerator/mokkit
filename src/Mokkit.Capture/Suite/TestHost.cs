@@ -99,7 +99,7 @@ public class TestHost : ITestHost
             
             if (resolvedService == null)
             {
-                throw new InvalidOperationException($"Cannot find container for type {type}");
+                throw new InvalidOperationException($"Cannot find type {type} in registered containers");
             }
 
             _resolveCache[type] = resolvedService;
