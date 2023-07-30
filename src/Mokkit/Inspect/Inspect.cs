@@ -1,5 +1,5 @@
-using Mokkit.Capture.Inspect;
-using Mokkit.Capture.Suite;
+using Mokkit.Inspect;
+using Mokkit.Suite;
 
 namespace Mokkit.Inspect;
 

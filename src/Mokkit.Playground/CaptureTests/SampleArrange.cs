@@ -1,6 +1,5 @@
 using System.Threading.Tasks;
 using Mokkit.Arrange;
-using Mokkit.Capture;
 
 namespace Mokkit.Playground.CaptureTests;
 
@@ -8,7 +7,7 @@ public static class SampleArrange
 {
     public static ITestArrange ArrangeFoo(this ITestArrange arrange, int innerValue, out Capture<Foo> fooCapture)
     {
-        var capture = Capture.Capture.Start(out fooCapture);
+        var capture = Capture.Start(out fooCapture);
         
         return arrange.Then(_ =>
         {
@@ -18,7 +17,7 @@ public static class SampleArrange
     
     public static ITestArrange ArrangeBar(this ITestArrange arrange, Capture<Foo> foo, out Capture<Bar> barCapture)
     {
-        var capture = Capture.Capture.Start(out barCapture);
+        var capture = Capture.Start(out barCapture);
 
         return arrange.Then(async _ =>
         {
@@ -29,7 +28,7 @@ public static class SampleArrange
     
     public static ITestArrange ArrangeWithService(this ITestArrange arrange, Capture<Foo> foo, out Capture<Bar> barCapture)
     {
-        var capture = Capture.Capture.Start(out barCapture);
+        var capture = Capture.Start(out barCapture);
 
         return arrange.Then(async host =>
         {

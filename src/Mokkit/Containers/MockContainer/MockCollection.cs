@@ -13,7 +13,7 @@ public class MockCollection<TMock> : IMockCollection<TMock>
     {
         _mocks.Add(new MockRegistration<TMock>(typeof(T), mock));
         return this;
-    }`
+    }
     
     public IMockCollection<TMock> TryAddMock<T>(TMock mock)
     {

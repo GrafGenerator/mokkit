@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Mokkit.Capture.Suite;
+using Mokkit.Suite;
 using Mokkit.Inspect;
 
 namespace Mokkit.Inspect;

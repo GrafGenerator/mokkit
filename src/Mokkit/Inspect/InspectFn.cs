@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Mokkit.Capture.Suite;
+using Mokkit.Suite;
 
 namespace Mokkit.Inspect;
 

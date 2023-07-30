@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Mokkit.Arrange;
-using Mokkit.Capture.Containers;
-using Mokkit.Capture.Inspect;
-using Mokkit.Capture.Suite;
+using Mokkit.Containers;
+using Mokkit.Inspect;
+using Mokkit.Suite;
 using Mokkit.Playground.SampleScenery;
 using NUnit.Framework;
 

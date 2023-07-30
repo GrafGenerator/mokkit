@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using Mokkit.Capture.Inspect;
+using Mokkit.Inspect;
 using Mokkit.Playground.SampleScenery;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
