@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
+using Mokkit.Arrange;
 using Mokkit.Capture;
-using Mokkit.Capture.Arrange;
 
 namespace Mokkit.Playground.CaptureTests;
 

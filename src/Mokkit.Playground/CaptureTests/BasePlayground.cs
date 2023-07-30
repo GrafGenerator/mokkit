@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Mokkit.Capture.Arrange;
+using Mokkit.Arrange;
 using Mokkit.Capture.Containers;
 using Mokkit.Capture.Inspect;
 using Mokkit.Capture.Suite;
