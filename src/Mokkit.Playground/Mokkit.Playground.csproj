@@ -15,7 +15,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Mokkit.Capture\Mokkit.Capture.csproj" />
       <ProjectReference Include="..\Mokkit\Mokkit.csproj" />
     </ItemGroup>
 
