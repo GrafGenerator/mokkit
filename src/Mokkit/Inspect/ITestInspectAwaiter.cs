@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 
-namespace Mokkit.Capture.Inspect;
+namespace Mokkit.Inspect;
 
 public interface ITestInspectAwaiter: INotifyCompletion
 {

@@ -1,4 +1,6 @@
-namespace Mokkit.Capture.Arrange;
+using Mokkit.Capture.Arrange;
+
+namespace Mokkit.Arrange;
 
 public interface ITestArrange
 {

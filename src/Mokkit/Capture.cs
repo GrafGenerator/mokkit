@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Mokkit.Capture;
+namespace Mokkit;
 
 public class Capture<T>: ICaptureInitializer<T>
 {

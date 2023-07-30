@@ -1,4 +1,4 @@
-namespace Mokkit.Capture.Containers;
+namespace Mokkit.Containers;
 
 public abstract class BaseDependencyContainer
 {

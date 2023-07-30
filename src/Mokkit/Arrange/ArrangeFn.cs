@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using Mokkit.Capture.Suite;
+using Mokkit.Suite;
 
-namespace Mokkit.Capture.Arrange;
+namespace Mokkit.Arrange;
 
 public delegate void ArrangeFn(ITestHost host);
 

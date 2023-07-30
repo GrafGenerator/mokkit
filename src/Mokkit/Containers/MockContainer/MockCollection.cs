@@ -1,26 +1,12 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Mokkit.Capture.Containers.MockContainer;
-
-public interface IMockCollection<TMock>: IList<MockRegistration<TMock>>
-{
-    IMockCollection<TMock> AddMock<T>(TMock mock);
-
-    IMockCollection<TMock> TryAddMock<T>(TMock mock);
-
-    TMock? GetMock<T>();
-
-    TMock GetRequiredMock<T>();
-    
-    IReadOnlyCollection<MockRegistration<TMock>> Registrations { get; }
-}
+namespace Mokkit.Containers.MockContainer;
 
 public class MockCollection<TMock> : IMockCollection<TMock>
 {
-    private readonly List<MockRegistration<TMock>> _mocks = new();
+    private readonly List<MockRegistration<TMock>> _mocks = [];
     private bool _isReadOnly;
 
     public IMockCollection<TMock> AddMock<T>(TMock mock)
@@ -41,6 +27,16 @@ public class MockCollection<TMock> : IMockCollection<TMock>
         _mocks.Add(new MockRegistration<TMock>(typeof(T), mock));
 
         return this;
+    }
+
+    public TMock? GetMock<T>()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public TMock GetRequiredMock<T>()
+    {
+        throw new System.NotImplementedException();
     }
 
     public IReadOnlyCollection<MockRegistration<TMock>> Registrations => _mocks;
@@ -108,18 +104,5 @@ public class MockCollection<TMock> : IMockCollection<TMock>
     public void MakeRedOnly()
     {
         _isReadOnly = true;
-    }
-}
-
-public class MockRegistration<TMock>
-{
-    public Type Type { get; }
-
-    public TMock Mock { get; }
-
-    public MockRegistration(Type type, TMock mock)
-    {
-        Type = type;
-        Mock = mock;
     }
 }

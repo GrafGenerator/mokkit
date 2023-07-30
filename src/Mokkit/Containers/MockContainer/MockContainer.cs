@@ -1,4 +1,4 @@
-namespace Mokkit.Capture.Containers.MockContainer;
+namespace Mokkit.Containers.MockContainer;
 
 public abstract class MockContainer<TMock> : BaseDependencyContainer, IDependencyContainer
 {

@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Mokkit.Capture.Arrange;
-using Mokkit.Capture.Containers;
-using Mokkit.Capture.Inspect;
+using Mokkit.Arrange;
+using Mokkit.Containers;
+using Mokkit.Inspect;
 
-namespace Mokkit.Capture.Suite;
+namespace Mokkit.Suite;
 
 public class TestStage : TestHost
 {
@@ -14,12 +14,12 @@ public class TestStage : TestHost
 
     public ITestArrange Arrange()
     {
-        return Mokkit.Capture.Arrange.Arrange.Start(this);
+        return Mokkit.Arrange.Arrange.Start(this);
     }
 
     public ITestInspect Inspect()
     {
-        return Mokkit.Capture.Inspect.Inspect.Start(this);
+        return Mokkit.Inspect.Inspect.Start(this);
     }
 
     public static async Task<TestStage> Create(params IDependencyContainerBuilder[] builders)

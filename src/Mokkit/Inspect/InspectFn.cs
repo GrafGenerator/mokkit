@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Mokkit.Capture.Suite;
 
-namespace Mokkit.Capture.Inspect;
+namespace Mokkit.Inspect;
 
 public delegate void InspectFn(ITestHost host);
 

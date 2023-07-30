@@ -1,7 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Mokkit.Capture.Containers;
+namespace Mokkit.Containers;
 
 public class MicrosoftDiContainer : BaseDependencyContainer, IDependencyContainer
 {

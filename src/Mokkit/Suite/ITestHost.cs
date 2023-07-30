@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Mokkit.Capture.Suite;
+namespace Mokkit.Suite;
 
 public interface ITestHost
 {

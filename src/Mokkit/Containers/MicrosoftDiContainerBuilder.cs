@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Mokkit.Capture.Containers;
+namespace Mokkit.Containers;
 
 public class MicrosoftDiContainerBuilder : IDependencyContainerBuilder
 {

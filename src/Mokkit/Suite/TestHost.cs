@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Mokkit.Capture.Containers;
+using Mokkit.Containers;
 
-namespace Mokkit.Capture.Suite;
+namespace Mokkit.Suite;
 
 public class TestHost : ITestHost
 {

@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Mokkit.Capture.Containers.MockContainer;
+namespace Mokkit.Containers.MockContainer;
 
 public class MockContainerBuilder<TMock> : IDependencyContainerBuilder
 {

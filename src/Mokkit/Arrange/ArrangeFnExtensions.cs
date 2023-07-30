@@ -1,16 +1,18 @@
-namespace Mokkit.Capture.Arrange;
+using Mokkit.Capture.Arrange;
+
+namespace Mokkit.Arrange;
 
 public static class ArrangeFnExtensions
 {
     public static ITestArrange Then(this ArrangeAsyncFn arrangeFn, ArrangeAsyncFn thenFn) =>
         Arrange.Start(arrangeFn).Then(thenFn);
-    
+
     public static ITestArrange Then(this ArrangeAsyncFn arrangeFn, ArrangeFn thenFn) =>
         Arrange.Start(arrangeFn).Then(thenFn);
-    
+
     public static ITestArrange Then(this ArrangeFn arrangeFn, ArrangeAsyncFn thenFn) =>
         Arrange.Start(arrangeFn).Then(thenFn);
-    
+
     public static ITestArrange Then(this ArrangeFn arrangeFn, ArrangeFn thenFn) =>
         Arrange.Start(arrangeFn).Then(thenFn);
 }

@@ -1,4 +1,4 @@
-namespace Mokkit.Capture;
+namespace Mokkit;
 
 public interface ICaptureInitializer<T>
 {

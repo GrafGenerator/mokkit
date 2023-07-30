@@ -1,4 +1,6 @@
-namespace Mokkit.Capture.Inspect;
+using Mokkit.Inspect;
+
+namespace Mokkit.Inspect;
 
 public interface ITestInspect
 {

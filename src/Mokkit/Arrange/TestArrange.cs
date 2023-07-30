@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Mokkit.Capture.Suite;
+using Mokkit.Suite;
 
-namespace Mokkit.Capture.Arrange;
+namespace Mokkit.Arrange;
 
 public class TestArrange : ITestArrange
 {
     private readonly TestStage _stage;
-    private readonly List<ArrangeAsyncFn> _arrangeFns = new();
+    private readonly List<ArrangeAsyncFn> _arrangeFns = [];
 
     internal TestArrange(TestStage stage)
     {
         _stage = stage;
     }
-    
+
     internal TestArrange(ArrangeFn arrangeFn)
     {
         _arrangeFns.Add(host =>
@@ -36,15 +36,15 @@ public class TestArrange : ITestArrange
         _arrangeFns.Add(arrangeFn);
         return this;
     }
-    
+
     public ITestArrange Then(ArrangeFn arrangeFn)
     {
         _arrangeFns.Add(host =>
-        { 
+        {
             arrangeFn(host);
             return Task.CompletedTask;
         });
-        
+
         return this;
     }
 
@@ -55,14 +55,14 @@ public class TestArrange : ITestArrange
             await arrangeFn(_stage);
         }
     }
-    
+
     public ITestArrangeAwaiter GetAwaiter()
     {
         return new TestArrangeAwaiter(this);
     }
 }
 
-public interface ITestArrangeAwaiter: INotifyCompletion
+public interface ITestArrangeAwaiter : INotifyCompletion
 {
     bool IsCompleted { get; }
     void GetResult();
@@ -71,21 +71,21 @@ public interface ITestArrangeAwaiter: INotifyCompletion
 internal class TestArrangeAwaiter : ITestArrangeAwaiter
 {
     private readonly SynchronizationContext? _capturedContext = SynchronizationContext.Current;
-    
+
     public bool IsCompleted => _action.IsCompleted;
-    
+
     private readonly Task _action;
-    
+
     internal TestArrangeAwaiter(TestArrange arrange)
     {
         _action = arrange.DoArrangeAsync();
     }
-    
+
     public void GetResult()
     {
         SpinWait.SpinUntil(() => IsCompleted);
     }
-    
+
     public void OnCompleted(Action continuation)
     {
         if (_capturedContext != null)
@@ -96,9 +96,9 @@ internal class TestArrangeAwaiter : ITestArrangeAwaiter
         {
             continuation();
         }
-        
+
         // new Task(continuation).Start();
-        
+
         // if (IsCompleted)
         // {
         //     continuation();

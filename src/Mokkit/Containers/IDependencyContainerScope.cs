@@ -1,6 +1,6 @@
 using System;
 
-namespace Mokkit.Capture.Containers;
+namespace Mokkit.Containers;
 
 public interface IDependencyContainerScope: IDisposable
 {

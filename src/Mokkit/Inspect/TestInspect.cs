@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Mokkit.Capture.Suite;
+using Mokkit.Inspect;
 
-namespace Mokkit.Capture.Inspect;
+namespace Mokkit.Inspect;
 
 public class TestInspect : ITestInspect
 {

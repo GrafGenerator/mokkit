@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Mokkit.Capture.Inspect;
+namespace Mokkit.Inspect;
 
 internal class TestInspectAwaiter : ITestInspectAwaiter
 {

@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Mokkit.Capture.Containers;
+namespace Mokkit.Containers;
 
 public interface IDependencyContainerBuilder
 {
