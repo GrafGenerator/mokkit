@@ -26,6 +26,22 @@ public static class SampleArrange
         });
     }
     
+    public static ITestArrange ArrangeMock(this ITestArrange arrange, Capture<Foo> foo, out Capture<Bar> barCapture)
+    {
+        var capture = Capture.Start(out barCapture);
+
+        return arrange.Then(async host =>
+        {
+            await host.ExecuteAsync<Foo>(async foo1 =>
+            {
+                
+            });
+            
+            await Task.Delay(1); // async arrange
+            capture.Set(new Bar(foo));
+        });
+    }
+    
     public static ITestArrange ArrangeWithService(this ITestArrange arrange, Capture<Foo> foo, out Capture<Bar> barCapture)
     {
         var capture = Capture.Start(out barCapture);
