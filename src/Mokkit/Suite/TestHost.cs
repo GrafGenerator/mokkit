@@ -17,35 +17,141 @@ public class TestHost : ITestHost
     }
 
     public void Execute<TService>(Action<TService> actionFn)
+        where TService : class
     {
         using var scope = BeginScope();
         actionFn(scope.Resolve<TService>());
     }
-
+    
     public void Execute<TService, TService2>(Action<TService, TService2> actionFn)
+        where TService : class
+        where TService2 : class
     {
         using var scope = BeginScope();
         actionFn(scope.Resolve<TService>(), scope.Resolve<TService2>());
     }
 
+    public void Execute<TService, TService2, TService3>(Action<TService, TService2, TService3> actionFn)
+        where TService : class
+        where TService2 : class
+        where TService3 : class
+    {
+        using var scope = BeginScope();
+        actionFn(scope.Resolve<TService>(), scope.Resolve<TService2>(), scope.Resolve<TService3>());
+    }
+    
+    public void Execute<TService, TService2, TService3, TService4>(Action<TService, TService2, TService3, TService4> actionFn)
+        where TService : class
+        where TService2 : class
+        where TService3 : class
+        where TService4 : class
+    {
+        using var scope = BeginScope();
+        actionFn(scope.Resolve<TService>(), scope.Resolve<TService2>(), scope.Resolve<TService3>(), scope.Resolve<TService4>());
+    }
+    
     public TOutput Execute<TService, TOutput>(Func<TService, TOutput> actionFn)
+        where TService : class
     {
         using var scope = BeginScope();
         return actionFn(scope.Resolve<TService>());
     }
 
+    public TOutput Execute<TService, TService2, TOutput>(Func<TService, TService2, TOutput> actionFn)
+        where TService : class
+        where TService2 : class
+    {
+        using var scope = BeginScope();
+        return actionFn(scope.Resolve<TService>(), scope.Resolve<TService2>());
+    }
+
+    public TOutput Execute<TService, TService2, TService3, TOutput>(Func<TService, TService2, TService3, TOutput> actionFn)
+        where TService : class
+        where TService2 : class
+        where TService3 : class
+    {
+        using var scope = BeginScope();
+        return actionFn(scope.Resolve<TService>(), scope.Resolve<TService2>(), scope.Resolve<TService3>());
+    }
+    
+    public TOutput Execute<TService, TService2, TService3, TService4, TOutput>(Func<TService, TService2, TService3, TService4, TOutput> actionFn)
+        where TService : class
+        where TService2 : class
+        where TService3 : class
+        where TService4 : class
+    {
+        using var scope = BeginScope();
+        return actionFn(scope.Resolve<TService>(), scope.Resolve<TService2>(), scope.Resolve<TService3>(), scope.Resolve<TService4>());
+    }
+    
     public async Task ExecuteAsync<TService>(Func<TService, Task> actionFn)
+        where TService : class
     {
         using var scope = BeginScope();
         await actionFn(scope.Resolve<TService>());
     }
 
+    public async Task ExecuteAsync<TService, TService2>(Func<TService, TService2, Task> actionFn)
+        where TService : class
+        where TService2 : class
+    {
+        using var scope = BeginScope();
+        await actionFn(scope.Resolve<TService>(), scope.Resolve<TService2>());
+    }
+
+    public async Task ExecuteAsync<TService, TService2, TService3>(Func<TService, TService2, TService3, Task> actionFn)
+        where TService : class
+        where TService2 : class
+        where TService3 : class
+    {
+        using var scope = BeginScope();
+        await actionFn(scope.Resolve<TService>(), scope.Resolve<TService2>(), scope.Resolve<TService3>());
+    }
+    
+    public async Task ExecuteAsync<TService, TService2, TService3, TService4>(Func<TService, TService2, TService3, TService4, Task> actionFn)
+        where TService : class
+        where TService2 : class
+        where TService3 : class
+        where TService4 : class
+    {
+        using var scope = BeginScope();
+        await actionFn(scope.Resolve<TService>(), scope.Resolve<TService2>(), scope.Resolve<TService3>(), scope.Resolve<TService4>());
+    }
+    
     public async Task<TOutput> ExecuteAsync<TService, TOutput>(Func<TService, Task<TOutput>> actionFn)
+        where TService : class
     {
         using var scope = BeginScope();
         return await actionFn(scope.Resolve<TService>());
     }
 
+    public async Task<TOutput> ExecuteAsync<TService, TService2, TOutput>(Func<TService, TService2, Task<TOutput>> actionFn)
+        where TService : class
+        where TService2 : class
+    {
+        using var scope = BeginScope();
+        return await actionFn(scope.Resolve<TService>(), scope.Resolve<TService2>());
+    }
+
+    public async Task<TOutput> ExecuteAsync<TService, TService2, TService3, TOutput>(Func<TService, TService2, TService3, Task<TOutput>> actionFn)
+        where TService : class
+        where TService2 : class
+        where TService3 : class
+    {
+        using var scope = BeginScope();
+        return await actionFn(scope.Resolve<TService>(), scope.Resolve<TService2>(), scope.Resolve<TService3>());
+    }
+    
+    public async Task<TOutput> ExecuteAsync<TService, TService2, TService3, TService4, TOutput>(Func<TService, TService2, TService3, TService4, Task<TOutput>> actionFn)
+        where TService : class
+        where TService2 : class
+        where TService3 : class
+        where TService4 : class
+    {
+        using var scope = BeginScope();
+        return await actionFn(scope.Resolve<TService>(), scope.Resolve<TService2>(), scope.Resolve<TService3>(), scope.Resolve<TService4>());
+    }
+    
     protected ScopeAggregator BeginScope()
     {
         return new ScopeAggregator(_containers);
@@ -53,19 +159,19 @@ public class TestHost : ITestHost
 
     protected async Task BuildContainers()
     {
-        foreach (var container in _builders)
+        foreach (var builder in _builders)
         {
-            await container.PreInit();
+            await builder.PreInit();
         }
 
-        foreach (var container in _builders)
+        foreach (var builder in _builders)
         {
-            await container.Init();
+            await builder.Init();
         }
 
-        foreach (var container in _builders)
+        foreach (var builder in _builders)
         {
-            await container.PreBuild();
+            await builder.PreBuild(_builders.ToArray());
         }
 
         _containers = _builders.Select(x => x.Build()).ToArray();
@@ -84,7 +190,7 @@ public class TestHost : ITestHost
             }
         }
 
-        public T Resolve<T>()
+        public T Resolve<T>() where T : class
         {
             var type = typeof(T);
 

@@ -4,10 +4,25 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
+
+    <Version>0.1.0</Version>
+    <Title>Mokkit.Containers.Moq</Title>
+    <Authors>Nikita Ivanov a.k.a GrafGenerator </Authors>
+    <Description>Container wrapper of Moq for Mokkit.</Description>
+    <Copyright>Nikita Ivanov</Copyright>
+    <PackageProjectUrl>https://github.com/GrafGenerator/mokkit</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/GrafGenerator/mokkit/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/GrafGenerator/mokkit</RepositoryUrl>
+    <RepositoryType>github</RepositoryType>
+    <PackageTags>mokkit,mock,mocks,tests,test,arrange,act,assert,organize</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Moq" Version="4.18.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Mokkit\Mokkit.csproj" />
   </ItemGroup>
 
 </Project>

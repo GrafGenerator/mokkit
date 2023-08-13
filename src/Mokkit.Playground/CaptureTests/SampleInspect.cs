@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Mokkit.Inspect;
 using Mokkit.Playground.SampleScenery;
+using Moq;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
@@ -26,6 +27,17 @@ public static class SampleInspect
             await host.ExecuteAsync<IService1>(async service1 =>
             {
                 Assert.That(service1.Value, expression);
+            });
+        });
+    }
+    
+    public static ITestInspect Service3Invocation(this ITestInspect inspect, string capturedInput, Times times)
+    {
+        return inspect.Then(host =>
+        {
+            host.Execute<Mock<IService3>>(service3Mock =>
+            {
+                service3Mock.Verify(x => x.Mocked(It.Is<string>(s => s.Equals(capturedInput))), times);
             });
         });
     }

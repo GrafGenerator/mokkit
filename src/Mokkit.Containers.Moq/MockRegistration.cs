@@ -1,16 +1,19 @@
 using System;
 
-namespace Mokkit.Containers.MockContainer;
+namespace Mokkit.Containers.Moq;
 
 public class MockRegistration<TMock>
 {
-    public Type Type { get; }
+    public Type InnerType { get; }
+
+    public Type MockType { get; set; }
 
     public TMock Mock { get; }
 
-    public MockRegistration(Type type, TMock mock)
+    public MockRegistration(Type innerType, TMock mock)
     {
-        Type = type;
+        InnerType = innerType;
+        MockType = typeof(TMock);
         Mock = mock;
     }
 }

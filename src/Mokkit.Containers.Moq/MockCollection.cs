@@ -1,8 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Mokkit.Containers.MockContainer;
+namespace Mokkit.Containers.Moq;
 
 public class MockCollection<TMock> : IMockCollection<TMock>
 {
@@ -11,13 +12,21 @@ public class MockCollection<TMock> : IMockCollection<TMock>
 
     public IMockCollection<TMock> AddMock<T>(TMock mock)
     {
+        var existing = _mocks.FirstOrDefault(x => x.InnerType == typeof(T));
+        
+        if (existing != null)
+        {
+            throw new InvalidOperationException($"Mock for type {typeof(T)} already added to container.");
+        }
+        
         _mocks.Add(new MockRegistration<TMock>(typeof(T), mock));
+
         return this;
     }
     
     public IMockCollection<TMock> TryAddMock<T>(TMock mock)
     {
-        var existing = _mocks.FirstOrDefault(x => x.Type == typeof(T));
+        var existing = _mocks.FirstOrDefault(x => x.InnerType == typeof(T));
 
         if (existing != null)
         {
@@ -29,17 +38,7 @@ public class MockCollection<TMock> : IMockCollection<TMock>
         return this;
     }
 
-    public TMock? GetMock<T>()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public TMock GetRequiredMock<T>()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public IReadOnlyCollection<MockRegistration<TMock>> Registrations => _mocks;
+    public IReadOnlyCollection<MockRegistration<TMock>> Registrations => this.ToList().AsReadOnly();
 
     public IEnumerator<MockRegistration<TMock>> GetEnumerator()
     {
@@ -101,7 +100,7 @@ public class MockCollection<TMock> : IMockCollection<TMock>
         set => _mocks[index] = value;
     }
 
-    public void MakeRedOnly()
+    public void MakeReadOnly()
     {
         _isReadOnly = true;
     }

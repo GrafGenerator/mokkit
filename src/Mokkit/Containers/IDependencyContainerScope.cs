@@ -4,5 +4,5 @@ namespace Mokkit.Containers;
 
 public interface IDependencyContainerScope: IDisposable
 {
-    T? TryResolve<T>();
+    T? TryResolve<T>() where T : class;
 }

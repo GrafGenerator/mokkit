@@ -3,11 +3,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Mokkit.Containers.Microsoft.Extensions.DependencyInjection;
 
-public class MicrosoftDiContainer : BaseDependencyContainer, IDependencyContainer
+public class ServiceProviderContainer : BaseDependencyContainer, IDependencyContainer
 {
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public MicrosoftDiContainer(IServiceProvider serviceProvider)
+    public ServiceProviderContainer(IServiceProvider serviceProvider)
     {
         _scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
     }
@@ -31,7 +31,7 @@ public class MicrosoftDiContainer : BaseDependencyContainer, IDependencyContaine
             _serviceScope.Dispose();
         }
 
-        public T? TryResolve<T>()
+        public T? TryResolve<T>() where T : class
         {
             return _serviceScope.ServiceProvider.GetService<T>();
         }

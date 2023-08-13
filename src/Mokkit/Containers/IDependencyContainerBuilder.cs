@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Mokkit.Containers;
@@ -8,7 +9,9 @@ public interface IDependencyContainerBuilder
     
     Task Init();
     
-    Task PreBuild();
+    Task PreBuild(IDependencyContainerBuilder[] builders);
+
+    TCollection? TryGetCollection<TCollection>() where TCollection : class;
     
     IDependencyContainer Build();
 }

@@ -5,13 +5,19 @@ namespace Mokkit.Suite;
 
 public interface ITestHost
 {
-    void Execute<TService>(Action<TService> actionFn);
-    
-    void Execute<TService, TService2>(Action<TService, TService2> actionFn);
+    void Execute<TService>(Action<TService> actionFn)
+        where TService : class;
 
-    TOutput Execute<TService, TOutput>(Func<TService, TOutput> actionFn);
-    
-    Task ExecuteAsync<TService>(Func<TService, Task> actionFn);
+    void Execute<TService, TService2>(Action<TService, TService2> actionFn)
+        where TService : class
+        where TService2 : class;
 
-    Task<TOutput> ExecuteAsync<TService, TOutput>(Func<TService, Task<TOutput>> actionFn);
+    TOutput Execute<TService, TOutput>(Func<TService, TOutput> actionFn)
+        where TService : class;
+
+    Task ExecuteAsync<TService>(Func<TService, Task> actionFn)
+        where TService : class;
+
+    Task<TOutput> ExecuteAsync<TService, TOutput>(Func<TService, Task<TOutput>> actionFn)
+        where TService : class;
 }
