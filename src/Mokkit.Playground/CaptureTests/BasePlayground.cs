@@ -72,6 +72,7 @@ public class BasePlayground
     private async Task BuildMocks(IMockCollection<Mock> mocks)
     {
         mocks.AddMock<IService3>(new Mock<IService3>());
+        mocks.AddMock<IService4>(new Mock<IService4>());
 
         await BuildAdditionalMocks(mocks);
     }

@@ -13,7 +13,7 @@ public class MockRegistration<TMock>
     public MockRegistration(Type innerType, TMock mock)
     {
         InnerType = innerType;
-        MockType = typeof(TMock);
+        MockType = mock?.GetType() ?? throw new ArgumentNullException(nameof(mock));
         Mock = mock;
     }
 }

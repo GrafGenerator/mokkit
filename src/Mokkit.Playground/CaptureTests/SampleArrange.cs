@@ -28,14 +28,27 @@ public static class SampleArrange
         });
     }
     
-    public static ITestArrange ArrangeMock(this ITestArrange arrange, string captureInput, string resultOutput)
+    public static ITestArrange ArrangeMock3(this ITestArrange arrange, string captureInput, string resultOutput)
     {
         return arrange.Then(host =>
         {
             host.Execute<Mock<IService3>>(service3Mock =>
             {
                 service3Mock
-                    .Setup(x => x.Mocked(It.Is<string>(s => s.Equals(captureInput))))
+                    .Setup(x => x.Mocked3(It.Is<string>(s => s.Equals(captureInput))))
+                    .Returns(resultOutput);
+            });
+        });
+    }
+    
+    public static ITestArrange ArrangeMock4(this ITestArrange arrange, string captureInput, string resultOutput)
+    {
+        return arrange.Then(host =>
+        {
+            host.Execute<Mock<IService4>>(service4Mock =>
+            {
+                service4Mock
+                    .Setup(x => x.Mocked4(It.Is<string>(s => s.Equals(captureInput))))
                     .Returns(resultOutput);
             });
         });

@@ -60,14 +60,16 @@ public class BasicPlaygroundTests: BasePlayground
         await Arrange
             .ArrangeFoo(testInnerValue, out var foo)
             .ArrangeBar(foo, out var bar)
-            .ArrangeMock(mockCapturedInput, "123");
+            .ArrangeMock3(mockCapturedInput, "123")
+            .ArrangeMock4(mockCapturedInput, "123");
 
         // Act
         await Act(foo);
             
         // Assert
         await Inspect
-            .Service3Invocation(mockCapturedInput, Times.Once());
+            .Service3Invocation(mockCapturedInput, Times.Once())
+            .Service4Invocation(mockCapturedInput, Times.Once());
     }
     
     private async Task<int> Act(Foo foo)

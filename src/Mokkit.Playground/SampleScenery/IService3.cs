@@ -2,6 +2,6 @@
 {
     public interface IService3
     {
-        string Mocked(string input);
+        string Mocked3(string input);
     }
 }

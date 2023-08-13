@@ -37,7 +37,18 @@ public static class SampleInspect
         {
             host.Execute<Mock<IService3>>(service3Mock =>
             {
-                service3Mock.Verify(x => x.Mocked(It.Is<string>(s => s.Equals(capturedInput))), times);
+                service3Mock.Verify(x => x.Mocked3(It.Is<string>(s => s.Equals(capturedInput))), times);
+            });
+        });
+    }
+    
+    public static ITestInspect Service4Invocation(this ITestInspect inspect, string capturedInput, Times times)
+    {
+        return inspect.Then(host =>
+        {
+            host.Execute<Mock<IService4>>(service4Mock =>
+            {
+                service4Mock.Verify(x => x.Mocked4(It.Is<string>(s => s.Equals(capturedInput))), times);
             });
         });
     }
