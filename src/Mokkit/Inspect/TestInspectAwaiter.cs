@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -40,9 +41,9 @@ internal class TestInspectAwaiter : ITestInspectAwaiter
 
     private void RethrowOnFault()
     {
-        if (_action.IsFaulted)
+        if (_action is { IsFaulted: true, Exception.InnerException: not null })
         {
-            throw _action.Exception?.InnerException ?? _action.Exception!;
+            ExceptionDispatchInfo.Capture(_action.Exception.InnerException).Throw();
         }
     }
 }
