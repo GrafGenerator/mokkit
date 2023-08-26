@@ -21,8 +21,8 @@ public class BasicPlaygroundTests: BasePlayground
         var testInnerValue = 1;
 
         await Stage.Arrange()
-            .ArrangeFoo(testInnerValue, out var foo)
-            .ArrangeBar(foo, out var bar);
+            .ArrangeFoo(out var foo, testInnerValue)
+            .ArrangeBar(out var bar, foo);
 
         // Act
         
@@ -38,8 +38,8 @@ public class BasicPlaygroundTests: BasePlayground
         var testInnerValue = 255;
 
         await Arrange
-            .ArrangeFoo(testInnerValue, out var foo)
-            .ArrangeBar(foo, out var bar);
+            .ArrangeFoo(out var foo, testInnerValue)
+            .ArrangeBar(out var bar, foo);
 
         // Act
         await Act(foo);
@@ -58,8 +58,8 @@ public class BasicPlaygroundTests: BasePlayground
         const string mockCapturedInput = "captured_mock_input";
 
         await Arrange
-            .ArrangeFoo(testInnerValue, out var foo)
-            .ArrangeBar(foo, out var bar)
+            .ArrangeFoo(out var foo, testInnerValue, mockCapturedInput)
+            .ArrangeBar(out var bar, foo)
             .ArrangeMock3(mockCapturedInput, "123")
             .ArrangeMock4(mockCapturedInput, "123");
 
@@ -72,8 +72,39 @@ public class BasicPlaygroundTests: BasePlayground
             .Service4Invocation(mockCapturedInput, Times.Once());
     }
     
+    [Test]
+    public async Task TestScopeInspect()
+    {
+        const int code = 255;
+        const string testValue = "test";
+        const string mockCapturedInput = "captured_mock_input";
+        
+        // Arrange
+        await Arrange
+            .ArrangeSampleCommand(out var command, code: code, value: testValue)
+            .ArrangeMock3(testValue, "123")
+            .ArrangeMock4(testValue, "123");
+
+        // Act
+        var result = await Act(command);
+            
+        // Assert
+        await Inspect
+            .SampleResult(result)
+                .IsSuccessful(code)
+                .Value(testValue)
+            .Service3Invocation(testValue, Times.Once())
+            .Service4Invocation(testValue, Times.Once());
+    }
+    
     private async Task<int> Act(Foo foo)
     {
         return await Stage.ExecuteAsync<SampleActor, int>(async actor => await actor.Act(foo));
+    }
+
+    private async Task<SampleResult> Act(SampleCommand command)
+    {
+        return await Stage.ExecuteAsync<SampleActor, SampleResult>(
+            async actor => await actor.ActWithResult(command));
     }
 }

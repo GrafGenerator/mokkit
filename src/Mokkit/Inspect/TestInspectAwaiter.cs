@@ -20,10 +20,14 @@ internal class TestInspectAwaiter : ITestInspectAwaiter
     public void GetResult()
     {
         SpinWait.SpinUntil(() => IsCompleted);
+        
+        RethrowOnFault();
     }
     
     public void OnCompleted(Action continuation)
     {
+        RethrowOnFault();
+
         if (_capturedContext != null)
         {
             _capturedContext.Post(_ => continuation(), null);
@@ -32,17 +36,13 @@ internal class TestInspectAwaiter : ITestInspectAwaiter
         {
             continuation();
         }
-        
-        // new Task(continuation).Start();
-        
-        // if (IsCompleted)
-        // {
-        //     continuation();
-        // }
-        // else
-        // {
-        //     _action.ContinueWith(task => new Task(continuation));
-        //     // _continuation = continuation;
-        // }
+    }
+
+    private void RethrowOnFault()
+    {
+        if (_action.IsFaulted)
+        {
+            throw _action.Exception?.InnerException ?? _action.Exception!;
+        }
     }
 }

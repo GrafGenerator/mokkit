@@ -52,4 +52,29 @@ public static class SampleInspect
             });
         });
     }
+    
+    public static ITestInspectScope<SampleResult> SampleResult(this ITestInspect inspect, SampleResult result)
+    {
+        return inspect.ThenValueScope(result, async (_, execute) =>
+        {
+            Assert.Multiple(async () => await execute());
+        });
+    }
+    
+    public static ITestInspectScope<SampleResult> IsSuccessful(this ITestInspectScope<SampleResult> inspect, int code)
+    {
+        return inspect.Then((result, _) =>
+        {
+            Assert.That(result.Success, Is.True);
+            Assert.That(result.Code, Is.EqualTo(code));
+        });
+    }
+    
+    public static ITestInspectScope<SampleResult> Value(this ITestInspectScope<SampleResult> inspect, string value)
+    {
+        return inspect.Then((result, _) =>
+        {
+            Assert.That(result.Value, Is.EqualTo(value));
+        });
+    }
 }

@@ -1,5 +1,3 @@
-using Mokkit.Inspect;
-
 namespace Mokkit.Inspect;
 
 public static class InspectFnExtensions

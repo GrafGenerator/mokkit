@@ -1,4 +1,3 @@
-using Mokkit.Inspect;
 using Mokkit.Suite;
 
 namespace Mokkit.Inspect;

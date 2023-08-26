@@ -22,10 +22,23 @@ namespace Mokkit.Playground.SampleScenery
         {
             await _service1.Call(foo);
 
-            _service3.Mocked3(foo.Value.ToString());
-            _service4.Mocked4(foo.Value.ToString());
+            _service3.Mocked3(foo.StringValue);
+            _service4.Mocked4(foo.StringValue);
 
             return _service2.Call();
+        }
+        
+        public async Task<SampleResult> ActWithResult(SampleCommand command)
+        {
+            _service3.Mocked3(command.Value);
+            _service4.Mocked4(command.Value);
+            
+            return new SampleResult
+            {
+                Success = command.Success,
+                Code = command.Code,
+                Value = command.Value
+            };
         }
     }
 }

@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Mokkit.Suite;
-using Mokkit.Inspect;
 
 namespace Mokkit.Inspect;
 
-public class TestInspect : ITestInspect
+internal class TestInspect : ITestInspect
 {
     private readonly TestStage _stage;
     private readonly List<InspectAsyncFn> _inspectFns = new();
@@ -46,6 +45,28 @@ public class TestInspect : ITestInspect
         return this;
     }
 
+    public ITestInspectScope<T> ThenValueScope<T>(T value, InspectScopeAsyncFn? inspectScopeFn = null)
+    {
+        var innerFns = new List<InspectValueAsyncFn<T>>();
+        
+        var scopeFn = inspectScopeFn ?? (async (_, executeInnerFns) =>
+        {
+            await executeInnerFns();
+        });
+        
+        _inspectFns.Add(host => scopeFn(host, ExecuteInnerFns));
+        
+        return new TestInspectScope<T>(innerFns, this);
+
+        async Task ExecuteInnerFns()
+        {
+            foreach (var innerFn in innerFns)
+            {
+                await innerFn(value, _stage);
+            }
+        }
+    }
+    
     internal async Task DoInspectAsync()
     {
         foreach (var inspectFn in _inspectFns)

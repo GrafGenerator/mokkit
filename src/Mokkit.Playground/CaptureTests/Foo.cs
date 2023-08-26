@@ -4,8 +4,11 @@ public class Foo
 {
     public int Value { get; }
 
-    public Foo(int value)
+    public string? StringValue { get; }
+
+    public Foo(int value, string? stringValue = null)
     {
         Value = value;
+        StringValue = stringValue;
     }
 }
