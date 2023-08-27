@@ -10,7 +10,7 @@ public class MockCollection<TMock> : IMockCollection<TMock>
     private readonly List<MockRegistration<TMock>> _mocks = [];
     private bool _isReadOnly;
 
-    public IMockCollection<TMock> AddMock<T>(TMock mock)
+    public IMockCollection<TMock> AddMock<T>(Func<TMock> factory)
     {
         var existing = _mocks.FirstOrDefault(x => x.InnerType == typeof(T));
         
@@ -19,12 +19,12 @@ public class MockCollection<TMock> : IMockCollection<TMock>
             throw new InvalidOperationException($"Mock for type {typeof(T)} already added to container.");
         }
         
-        _mocks.Add(new MockRegistration<TMock>(typeof(T), mock));
+        _mocks.Add(new MockRegistration<TMock>(typeof(T), factory));
 
         return this;
     }
     
-    public IMockCollection<TMock> TryAddMock<T>(TMock mock)
+    public IMockCollection<TMock> TryAddMock<T>(Func<TMock> factory)
     {
         var existing = _mocks.FirstOrDefault(x => x.InnerType == typeof(T));
 
@@ -33,7 +33,7 @@ public class MockCollection<TMock> : IMockCollection<TMock>
             return this;
         }
 
-        _mocks.Add(new MockRegistration<TMock>(typeof(T), mock));
+        _mocks.Add(new MockRegistration<TMock>(typeof(T), factory));
 
         return this;
     }

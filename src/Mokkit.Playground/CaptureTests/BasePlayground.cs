@@ -14,7 +14,9 @@ namespace Mokkit.Playground.CaptureTests;
 
 public class BasePlayground
 {
-    protected TestStage Stage = null!;
+    private TestStageSetup _setup = null!;
+
+    protected TestStage Stage { get; private set; }
 
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
@@ -32,20 +34,21 @@ public class BasePlayground
             serviceProviderContainerBuilder,
         };
 
-        Stage = await TestStage.Create(builders);
+        _setup = await TestStageSetup.Create(builders);
     }
 
-    private Task InjectMocks(IServiceCollection services, IMockCollection<Mock> mockCollection)
+    [SetUp]
+    public async Task SetUp()
     {
-        foreach (var registration in mockCollection.Registrations)
-        {
-            services.AddSingleton(registration.InnerType, registration.Mock.Object);
-        }
-        
-        
-        return Task.CompletedTask;
+        Stage = _setup.EnterStage();
     }
 
+    [TearDown]
+    public async Task TearDown()
+    {
+        Stage.Dispose();
+    }
+    
     protected ITestArrange Arrange => Stage.Arrange();
 
     protected ITestInspect Inspect => Stage.Inspect();
@@ -71,9 +74,19 @@ public class BasePlayground
 
     private async Task BuildMocks(IMockCollection<Mock> mocks)
     {
-        mocks.AddMock<IService3>(new Mock<IService3>());
-        mocks.AddMock<IService4>(new Mock<IService4>());
+        mocks.AddMock<IService3>(() => new Mock<IService3>());
+        mocks.AddMock<IService4>(() => new Mock<IService4>());
 
         await BuildAdditionalMocks(mocks);
+    }
+
+    private Task InjectMocks(IServiceCollection services, IMockCollection<Mock> mockCollection)
+    {
+        foreach (var registration in mockCollection.Registrations)
+        {
+            services.ResolveFromStage(registration.InnerType);
+        }
+        
+        return Task.CompletedTask;
     }
 }

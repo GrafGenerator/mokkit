@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Mokkit.Suite;
 using Moq;
 
 namespace Mokkit.Containers.Moq;
@@ -70,8 +71,7 @@ public class MoqContainerBuilder : IDependencyContainerBuilder
     IDependencyContainer IDependencyContainerBuilder.Build()
     {
         MockCollection.MakeReadOnly();
-        var mockProvider = new MockProvider<Mock>(MockCollection);
 
-        return new MoqContainer(mockProvider);
+        return new MoqContainer(MockCollection);
     }
 }

@@ -1,28 +1,39 @@
+using System;
+using System.Collections.Concurrent;
+using Mokkit.Suite;
 using Moq;
 
 namespace Mokkit.Containers.Moq;
 
 public class MoqContainer : BaseDependencyContainer, IDependencyContainer
 {
-    private readonly MockProvider<Mock> _mockProvider;
+    private readonly MockCollection<Mock> _mockCollection;
 
-    internal MoqContainer(MockProvider<Mock> mockProvider)
+    internal MoqContainer(MockCollection<Mock> mockCollection)
     {
-        _mockProvider = mockProvider;
+        _mockCollection = mockCollection;
     }
 
-    public IDependencyContainerScope BeginScope()
+    public IDependencyContainerScope BeginScope(TestHostContext context)
     {
-        return new MockScope(_mockProvider);
+        return new MockScope(_mockCollection, context);
     }
 
     private class MockScope : IDependencyContainerScope
     {
-        private readonly MockProvider<Mock> _mockProvider;
+        private readonly ConcurrentDictionary<Type, Mock?> _mocks = new();
 
-        public MockScope(MockProvider<Mock> mockProvider)
+        public MockScope(MockCollection<Mock> mockCollection, TestHostContext context)
         {
-            _mockProvider = mockProvider;
+            var bag = context.TestHostBagResolver.Get(context.TestHostId);
+
+            foreach (var registration in mockCollection)
+            {
+                var mock = registration.Factory();
+                _mocks.TryAdd(mock.GetType(), mock);
+                
+                bag.TryAdd(registration.InnerType, mock.Object);
+            }
         }
         
         public void Dispose()
@@ -31,7 +42,13 @@ public class MoqContainer : BaseDependencyContainer, IDependencyContainer
 
         public T? TryResolve<T>() where T : class
         {
-            return _mockProvider.GetMock(typeof(T)) as T;
+            
+            if (_mocks.TryGetValue(typeof(T), out var mock))
+            {
+                return mock as T;
+            }
+            
+            return null;
         }
     }
 }

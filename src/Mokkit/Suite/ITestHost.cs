@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Mokkit.Suite;
 
-public interface ITestHost
+public interface ITestHost: IDisposable
 {
     void Execute<TService>(Action<TService> actionFn)
         where TService : class;

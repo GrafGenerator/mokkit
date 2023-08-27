@@ -1,5 +1,5 @@
+using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Mokkit.Arrange;
 using Mokkit.Containers;
 using Mokkit.Inspect;
@@ -8,7 +8,7 @@ namespace Mokkit.Suite;
 
 public class TestStage : TestHost
 {
-    private TestStage(IEnumerable<IDependencyContainerBuilder> builders) : base(builders)
+    public TestStage(IEnumerable<IDependencyContainer> containers, TestHostContext context) : base(containers, context)
     {
     }
 
@@ -20,13 +20,5 @@ public class TestStage : TestHost
     public ITestInspect Inspect()
     {
         return Mokkit.Inspect.Inspect.Start(this);
-    }
-
-    public static async Task<TestStage> Create(params IDependencyContainerBuilder[] builders)
-    {
-        var stage = new TestStage(builders);
-        await stage.BuildContainers();
-
-        return stage;
     }
 }

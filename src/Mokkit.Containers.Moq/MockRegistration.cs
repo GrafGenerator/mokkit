@@ -6,14 +6,11 @@ public class MockRegistration<TMock>
 {
     public Type InnerType { get; }
 
-    public Type MockType { get; set; }
+    public Func<TMock> Factory { get; }
 
-    public TMock Mock { get; }
-
-    public MockRegistration(Type innerType, TMock mock)
+    public MockRegistration(Type innerType, Func<TMock> factory)
     {
         InnerType = innerType;
-        MockType = mock?.GetType() ?? throw new ArgumentNullException(nameof(mock));
-        Mock = mock;
+        Factory = factory;
     }
 }

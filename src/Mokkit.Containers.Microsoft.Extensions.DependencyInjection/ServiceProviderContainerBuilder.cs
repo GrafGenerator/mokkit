@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Mokkit.Suite;
 
 namespace Mokkit.Containers.Microsoft.Extensions.DependencyInjection;
 
@@ -69,6 +70,10 @@ public class ServiceProviderContainerBuilder : IDependencyContainerBuilder
 
     IDependencyContainer IDependencyContainerBuilder.Build()
     {
+        _serviceCollection.AddScoped<StageResolve>();
+        _serviceCollection.AddScoped<IStageResolve>(sp => sp.GetRequiredService<StageResolve>());
+        _serviceCollection.AddScoped<IStageResolveSetup>(sp => sp.GetRequiredService<StageResolve>());
+        
         var serviceProvider = _serviceCollection.BuildServiceProvider();
 
         return new ServiceProviderContainer(serviceProvider);

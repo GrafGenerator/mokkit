@@ -1,6 +1,8 @@
+using Mokkit.Suite;
+
 namespace Mokkit.Containers;
 
 public interface IDependencyContainer
 {
-    IDependencyContainerScope BeginScope();
+    IDependencyContainerScope BeginScope(TestHostContext context);
 }

@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Mokkit.Suite;
 
 namespace Mokkit.Containers.Microsoft.Extensions.DependencyInjection;
 
@@ -12,18 +13,22 @@ public class ServiceProviderContainer : BaseDependencyContainer, IDependencyCont
         _scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
     }
 
-    public IDependencyContainerScope BeginScope()
+    public IDependencyContainerScope BeginScope(TestHostContext context)
     {
-        return new DependencyScope(_scopeFactory);
+        return new DependencyScope(_scopeFactory, context);
     }
 
     private class DependencyScope : IDependencyContainerScope
     {
         private readonly IServiceScope _serviceScope;
 
-        public DependencyScope(IServiceScopeFactory scopeFactory)
+        public DependencyScope(IServiceScopeFactory scopeFactory, TestHostContext context)
         {
             _serviceScope = scopeFactory.CreateScope();
+
+            var stageResolveSetup = _serviceScope.ServiceProvider.GetRequiredService<IStageResolveSetup>();
+            
+            stageResolveSetup.SetBag(context.TestHostBagResolver.Get(context.TestHostId));
         }
         
         public void Dispose()
