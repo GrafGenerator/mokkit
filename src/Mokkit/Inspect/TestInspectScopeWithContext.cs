@@ -4,28 +4,28 @@ using System.Threading.Tasks;
 
 namespace Mokkit.Inspect;
 
-internal class TestInspectScope<T> : ITestInspectScope<T>
+internal class TestInspectScopeWithContext<T, TContext> : ITestInspectScopeWithContext<T, TContext>
 {
-    private readonly List<InspectValueAsyncFn<T>> _innerFns;
+    private readonly List<InspectValueWithContextAsyncFn<T, TContext>> _innerFns;
     private readonly TestInspect _parent;
 
-    public TestInspectScope(List<InspectValueAsyncFn<T>> innerFns, TestInspect parent)
+    public TestInspectScopeWithContext(List<InspectValueWithContextAsyncFn<T, TContext>> innerFns, TestInspect parent)
     {
         _innerFns = innerFns;
         _parent = parent;
     }
 
-    public ITestInspectScope<T> Then(InspectValueAsyncFn<T> inspectFn)
+    public ITestInspectScopeWithContext<T, TContext> Then(InspectValueWithContextAsyncFn<T, TContext> inspectFn)
     {
         _innerFns.Add(inspectFn);
         return this;
     }
 
-    public ITestInspectScope<T> Then(InspectValueFn<T> inspectFn)
+    public ITestInspectScopeWithContext<T, TContext> Then(InspectValueWithContextFn<T, TContext> inspectFn)
     {
-        _innerFns.Add((value, host) =>
+        _innerFns.Add((value, context, host) =>
         {
-            inspectFn(value, host);
+            inspectFn(value, context, host);
             return Task.CompletedTask;
         });
 
@@ -47,7 +47,7 @@ internal class TestInspectScope<T> : ITestInspectScope<T>
         throw new InvalidOperationException("Cannot start value scope inside of existing value scope");
     }
 
-    public ITestInspectScopeWithContext<T1, TContext> ThenValueScope<T1, TContext>(T1 value, TContext context,
+    public ITestInspectScopeWithContext<T1, TContext1> ThenValueScope<T1, TContext1>(T1 value, TContext1 context,
         InspectScopeAsyncFn? inspectScopeFn = null)
     {
         throw new InvalidOperationException("Cannot start value scope inside of existing value scope");

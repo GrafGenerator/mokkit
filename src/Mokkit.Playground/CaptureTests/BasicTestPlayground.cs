@@ -51,6 +51,23 @@ public class BasicPlaygroundTests: BasePlayground
     }
 
     [Test]
+    public async Task TestExecuteOtherScope()
+    {
+        // Arrange
+        var testInnerValue = 255;
+
+        await Arrange
+            .ArrangeFoo(out var foo, testInnerValue, testInnerValue.ToString());
+
+        // Act
+        await ActScoped(foo);
+            
+        // Assert
+        await Inspect
+            .Service3Invocation($"scope: {testInnerValue}", Times.Once());
+    }
+
+    [Test]
     public async Task TestMockInvocation()
     {
         // Arrange
@@ -97,11 +114,35 @@ public class BasicPlaygroundTests: BasePlayground
             .Service4Invocation(testValue, Times.Once());
     }
     
+    [Test]
+    public async Task TestScopeInspectWithContext()
+    {
+        const int code = 255;
+        const string testValue = "test";
+        
+        // Arrange
+        await Arrange
+            .ArrangeSampleCommand(out var command, code: code, value: testValue);
+
+        // Act
+        var result = await Act(command);
+            
+        // Assert
+        await Inspect
+            .SampleResultWithContext(result, testValue)
+                .ValueFromContext();
+    }
+    
     private async Task<int> Act(Foo foo)
     {
         return await Stage.ExecuteAsync<SampleActor, int>(async actor => await actor.Act(foo));
     }
 
+    private async Task<string> ActScoped(Foo foo)
+    {
+        return await Stage.ExecuteAsync<SampleScopedActor, string>(async actor => await actor.Act(foo));
+    }
+    
     private async Task<SampleResult> Act(SampleCommand command)
     {
         return await Stage.ExecuteAsync<SampleActor, SampleResult>(

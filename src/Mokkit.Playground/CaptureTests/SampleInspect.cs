@@ -77,4 +77,20 @@ public static class SampleInspect
             Assert.That(result.Value, Is.EqualTo(value));
         });
     }
+    
+    public static ITestInspectScopeWithContext<SampleResult, string> SampleResultWithContext(this ITestInspect inspect, SampleResult result, string value)
+    {
+        return inspect.ThenValueScope(result, value, async (_, execute) =>
+        {
+            Assert.Multiple(async () => await execute());
+        });
+    }
+    
+    public static ITestInspectScopeWithContext<SampleResult, string> ValueFromContext(this ITestInspectScopeWithContext<SampleResult, string> inspect)
+    {
+        return inspect.Then((result, context, _) =>
+        {
+            Assert.That(result.Value, Is.EqualTo(context));
+        });
+    }
 }

@@ -67,6 +67,28 @@ internal class TestInspect : ITestInspect
         }
     }
     
+    public ITestInspectScopeWithContext<T, TContext> ThenValueScope<T, TContext>(T value, TContext context, InspectScopeAsyncFn? inspectScopeFn = null)
+    {
+        var innerFns = new List<InspectValueWithContextAsyncFn<T, TContext>>();
+        
+        var scopeFn = inspectScopeFn ?? (async (_, executeInnerFns) =>
+        {
+            await executeInnerFns();
+        });
+        
+        _inspectFns.Add(host => scopeFn(host, ExecuteInnerFns));
+        
+        return new TestInspectScopeWithContext<T, TContext>(innerFns, this);
+
+        async Task ExecuteInnerFns()
+        {
+            foreach (var innerFn in innerFns)
+            {
+                await innerFn(value, context, _stage);
+            }
+        }
+    }
+    
     internal async Task DoInspectAsync()
     {
         foreach (var inspectFn in _inspectFns)

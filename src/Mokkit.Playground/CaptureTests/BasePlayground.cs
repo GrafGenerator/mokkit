@@ -36,7 +36,7 @@ public class BasePlayground
 
         _setup = await TestStageSetup.Create(builders);
     }
-
+    
     [SetUp]
     public async Task SetUp()
     {
@@ -68,6 +68,7 @@ public class BasePlayground
         services.AddSingleton<IService1, Service1>();
         services.AddSingleton<IService2, Service2>();
         services.AddScoped<SampleActor>();
+        services.AddScoped<SampleScopedActor>();
 
         await BuildAdditionalServices(services);
     }
