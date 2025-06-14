@@ -5,7 +5,7 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
 
-    <Version>0.1.1</Version>
+    <Version>0.2.0</Version>
     <Title>Mokkit.Containers.Microsoft.Extensions.DependencyInjection</Title>
     <Authors>Nikita Ivanov a.k.a GrafGenerator </Authors>
     <Description>Container wrapper of Microsoft.Extensions.DependencyInjection for Mokkit.</Description>
@@ -14,7 +14,7 @@
     <PackageLicenseUrl>https://github.com/GrafGenerator/mokkit/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/GrafGenerator/mokkit</RepositoryUrl>
     <RepositoryType>github</RepositoryType>
-    <PackageTags>mokkit,mock,mocks,tests,test,arrange,act,assert,organize</PackageTags>
+    <PackageTags>mokkit,mock,mocks,tests,test,arrange,act,assert,organize,dependency,serviceprovider,dependencyinjection</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

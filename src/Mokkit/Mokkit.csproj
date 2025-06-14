@@ -4,10 +4,10 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
 
-    <Version>0.1.1</Version>
+    <Version>0.2.0</Version>
     <Title>Mokkit</Title>
     <Authors>Nikita Ivanov a.k.a GrafGenerator </Authors>
-    <Description>Mokkit is a set of classes to organize AAA (arrange, act, assert) flow in tests.</Description>
+    <Description>Mokkit is a tool set to organize AAA (arrange, act, assert) flow in tests.</Description>
     <Copyright>Nikita Ivanov</Copyright>
     <PackageProjectUrl>https://github.com/GrafGenerator/mokkit</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/GrafGenerator/mokkit/blob/master/LICENSE</PackageLicenseUrl>
