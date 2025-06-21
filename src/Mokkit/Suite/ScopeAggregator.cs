@@ -7,17 +7,28 @@ namespace Mokkit.Suite;
 
 internal class ScopeAggregator : IDisposable
 {
+    private readonly TestHostContext _context;
     private readonly Dictionary<Type, object> _resolveCache = new();
     private readonly List<IDependencyContainerScope> _scopes = new();
 
     public ScopeAggregator(IReadOnlyCollection<IDependencyContainer> containers, TestHostContext context)
     {
+        _context = context;
+
         foreach (var container in containers)
         {
             _scopes.Add(container.BeginScope(context));
         }
     }
 
+    public void OnAsyncScopeEnter()
+    {
+        foreach (var scope in _scopes)
+        {
+            scope.OnAsyncScopeEnter();
+        }
+    }
+    
     public T Resolve<T>() where T : class
     {
         var type = typeof(T);
@@ -30,7 +41,7 @@ internal class ScopeAggregator : IDisposable
         var resolvedService = _scopes
             .Select(x => x.TryResolve<T>())
             .FirstOrDefault(x => x != null);
-            
+
         if (resolvedService == null)
         {
             throw new InvalidOperationException($"Cannot find type {type} in registered containers");

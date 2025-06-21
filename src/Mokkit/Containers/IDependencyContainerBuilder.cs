@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Mokkit.Suite;
 
@@ -14,5 +13,5 @@ public interface IDependencyContainerBuilder
 
     TCollection? TryGetCollection<TCollection>() where TCollection : class;
     
-    IDependencyContainer Build();
+    IDependencyContainer Build(ITestHostBagAccessor bagAccessor);
 }

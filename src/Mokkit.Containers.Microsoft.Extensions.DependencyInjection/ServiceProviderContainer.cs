@@ -20,20 +20,22 @@ public class ServiceProviderContainer : BaseDependencyContainer, IDependencyCont
 
     private class DependencyScope : IDependencyContainerScope
     {
+        private readonly TestHostContext _context;
         private readonly IServiceScope _serviceScope;
 
         public DependencyScope(IServiceScopeFactory scopeFactory, TestHostContext context)
         {
+            _context = context;
             _serviceScope = scopeFactory.CreateScope();
-
-            var stageResolveSetup = _serviceScope.ServiceProvider.GetRequiredService<IStageResolveSetup>();
-            
-            stageResolveSetup.SetBag(context.TestHostBagResolver.Get(context.TestHostId));
         }
-        
+
         public void Dispose()
         {
             _serviceScope.Dispose();
+        }
+
+        public void OnAsyncScopeEnter()
+        {
         }
 
         public T? TryResolve<T>() where T : class

@@ -68,11 +68,10 @@ public class ServiceProviderContainerBuilder : IDependencyContainerBuilder
         return this;
     }
 
-    IDependencyContainer IDependencyContainerBuilder.Build()
+    IDependencyContainer IDependencyContainerBuilder.Build(ITestHostBagAccessor bagAccessor)
     {
-        _serviceCollection.AddScoped<StageResolve>();
-        _serviceCollection.AddScoped<IStageResolve>(sp => sp.GetRequiredService<StageResolve>());
-        _serviceCollection.AddScoped<IStageResolveSetup>(sp => sp.GetRequiredService<StageResolve>());
+        _serviceCollection.AddSingleton(bagAccessor);
+        _serviceCollection.AddScoped<IStageResolve, StageResolve>();
         
         var serviceProvider = _serviceCollection.BuildServiceProvider();
 

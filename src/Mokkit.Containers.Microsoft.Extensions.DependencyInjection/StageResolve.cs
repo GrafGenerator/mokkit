@@ -3,22 +3,24 @@ using Mokkit.Suite;
 
 namespace Mokkit.Containers.Microsoft.Extensions.DependencyInjection;
 
-public class StageResolve : IStageResolve, IStageResolveSetup
+public class StageResolve : IStageResolve
 {
-    private TestHostBag? _bag;
+    private readonly ITestHostBagAccessor _testHostBagAccessor;
 
+    public StageResolve(ITestHostBagAccessor testHostBagAccessor)
+    {
+        _testHostBagAccessor = testHostBagAccessor;
+    }
+    
     public object? Resolve(Type serviceType)
     {
-        if (_bag == null)
+        var bag = _testHostBagAccessor.Bag;
+        
+        if (bag == null)
         {
             throw new InvalidOperationException("Stage resolver is in corrupt state, test host bag is missing.");
         }
 
-        return _bag.TryGet(serviceType);
-    }
-
-    public void SetBag(TestHostBag bag)
-    {
-        _bag = bag;
+        return bag.TryGet(serviceType);
     }
 }

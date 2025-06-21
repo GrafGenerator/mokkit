@@ -4,13 +4,13 @@ namespace Mokkit.Suite;
 
 public class TestHostContext
 {
-    public TestHostContext(TestHostBagResolver testHostBagResolver, Guid testHostId)
+    public TestHostContext(Guid testHostId, TestHostBag bag)
     {
-        TestHostBagResolver = testHostBagResolver;
         TestHostId = testHostId;
+        Bag = bag;
     }
 
-    public TestHostBagResolver TestHostBagResolver { get; }
-    
     public Guid TestHostId { get; }
+
+    public TestHostBag Bag { get; }
 }

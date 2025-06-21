@@ -68,10 +68,10 @@ public class MoqContainerBuilder : IDependencyContainerBuilder
         return this;
     }
 
-    IDependencyContainer IDependencyContainerBuilder.Build()
+    IDependencyContainer IDependencyContainerBuilder.Build(ITestHostBagAccessor bagAccessor)
     {
         MockCollection.MakeReadOnly();
 
-        return new MoqContainer(MockCollection);
+        return new MoqContainer(MockCollection, bagAccessor);
     }
 }

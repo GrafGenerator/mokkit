@@ -8,7 +8,8 @@ namespace Mokkit.Suite;
 
 public class TestStage : TestHost
 {
-    public TestStage(IEnumerable<IDependencyContainer> containers, TestHostContext context) : base(containers, context)
+    public TestStage(IEnumerable<IDependencyContainer> containers, ITestHostBagAccessor bagAccessor, Guid stageId)
+        : base(containers, bagAccessor, stageId)
     {
     }
 

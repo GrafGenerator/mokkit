@@ -10,13 +10,13 @@ public class TestStageSetup
 {
     private readonly IEnumerable<IDependencyContainerBuilder> _builders;
     private IDependencyContainer[] _containers = Array.Empty<IDependencyContainer>();
-    private readonly TestHostBagResolver _bagResolver;
+    private readonly TestHostBagAccessor _bagAccessor;
     private bool _areContainersBuilt;
 
     protected TestStageSetup(IEnumerable<IDependencyContainerBuilder> builders)
     {
         _builders = builders;
-        _bagResolver = new TestHostBagResolver();
+        _bagAccessor = new TestHostBagAccessor();
     }
 
     public TestStage EnterStage()
@@ -27,11 +27,8 @@ public class TestStageSetup
         }
 
         var stageId = Guid.NewGuid();
-        _bagResolver.Create(stageId);
 
-        var context = new TestHostContext(_bagResolver, stageId);
-
-        return new TestStage(_containers, context);
+        return new TestStage(_containers, _bagAccessor, stageId);
     }
 
     protected async Task BuildContainers()
@@ -51,7 +48,7 @@ public class TestStageSetup
             await builder.PreBuild(_builders.ToArray());
         }
 
-        _containers = _builders.Select(x => x.Build()).ToArray();
+        _containers = _builders.Select(x => x.Build(_bagAccessor)).ToArray();
         _areContainersBuilt = true;
     }
 
