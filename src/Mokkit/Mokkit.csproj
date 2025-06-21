@@ -4,7 +4,7 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
 
-    <Version>0.2.1</Version>
+    <Version>0.2.2</Version>
     <Title>Mokkit</Title>
     <Authors>Nikita Ivanov a.k.a GrafGenerator </Authors>
     <Description>Mokkit is a tool set to organize AAA (arrange, act, assert) flow in tests.</Description>
