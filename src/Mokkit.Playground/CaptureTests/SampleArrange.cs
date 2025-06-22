@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Mokkit.Arrange;
 using Mokkit.Playground.SampleScenery;
@@ -52,19 +53,13 @@ public static class SampleArrange
         });
     }
     
-    public static ITestArrange ArrangeWithService(this ITestArrange arrange, Capture<Foo> foo, out Capture<Bar> barCapture)
+    public static ITestArrange ArrangeWithException(this ITestArrange arrange, out Capture<Foo> fooCapture, string exceptionMessage)
     {
-        var capture = Capture.Start(out barCapture);
+        var capture = Capture.Start(out fooCapture);
 
-        return arrange.Then(async host =>
+        return arrange.Then(_ =>
         {
-            await host.ExecuteAsync<Foo>(async foo1 =>
-            {
-                
-            });
-            
-            await Task.Delay(1); // async arrange
-            capture.Set(new Bar(foo));
+            throw new InvalidOperationException(exceptionMessage);
         });
     }
 

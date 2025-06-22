@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Mokkit.Playground.SampleScenery;
 using Moq;
@@ -6,14 +7,13 @@ using NUnit.Framework;
 namespace Mokkit.Playground.CaptureTests;
 
 [TestFixture]
-public class BasicPlaygroundTests: BasePlayground
+public class BasicPlaygroundTests : BasePlayground
 {
     [SetUp]
     public void SetUp()
     {
-        
     }
-    
+
     [Test]
     public async Task TestCustomizedArrange()
     {
@@ -25,12 +25,12 @@ public class BasicPlaygroundTests: BasePlayground
             .ArrangeBar(out var bar, foo);
 
         // Act
-        
+
         // Assert
         Assert.That(bar.Value, Is.Not.Null);
         Assert.That(bar.Value.GetValue(), Is.EqualTo(testInnerValue));
     }
-    
+
     [Test]
     public async Task TestExecuteInScope()
     {
@@ -43,7 +43,7 @@ public class BasicPlaygroundTests: BasePlayground
 
         // Act
         await Act(foo);
-            
+
         // Assert
         await Inspect
             .Service1FooValue(Is.EqualTo(testInnerValue))
@@ -61,7 +61,7 @@ public class BasicPlaygroundTests: BasePlayground
 
         // Act
         await ActScoped(foo);
-            
+
         // Assert
         await Inspect
             .Service3Invocation($"scope: {testInnerValue}", Times.Once());
@@ -82,20 +82,20 @@ public class BasicPlaygroundTests: BasePlayground
 
         // Act
         await Act(foo);
-            
+
         // Assert
         await Inspect
             .Service3Invocation(mockCapturedInput, Times.Once())
             .Service4Invocation(mockCapturedInput, Times.Once());
     }
-    
+
     [Test]
     public async Task TestScopeInspect()
     {
         const int code = 255;
         const string testValue = "test";
         const string mockCapturedInput = "captured_mock_input";
-        
+
         // Arrange
         await Arrange
             .ArrangeSampleCommand(out var command, code: code, value: testValue)
@@ -104,35 +104,54 @@ public class BasicPlaygroundTests: BasePlayground
 
         // Act
         var result = await Act(command);
-            
+
         // Assert
         await Inspect
             .SampleResult(result)
-                .IsSuccessful(code)
-                .Value(testValue)
+            .IsSuccessful(code)
+            .Value(testValue)
             .Service3Invocation(testValue, Times.Once())
             .Service4Invocation(testValue, Times.Once());
     }
-    
+
     [Test]
     public async Task TestScopeInspectWithContext()
     {
         const int code = 255;
         const string testValue = "test";
-        
+
         // Arrange
         await Arrange
             .ArrangeSampleCommand(out var command, code: code, value: testValue);
 
         // Act
         var result = await Act(command);
-            
+
         // Assert
         await Inspect
             .SampleResultWithContext(result, testValue)
-                .ValueFromContext();
+            .ValueFromContext();
     }
-    
+
+    [Test]
+    public async Task TestExceptionInArrange()
+    {
+        const string exceptionMessage = "Arrange throws exception";
+        
+        // Arrange
+        var awaitableArrange = Arrange
+            .ArrangeWithException(out var foo, exceptionMessage);
+
+        // Act
+        AsyncTestDelegate act = async () => await awaitableArrange;
+
+        // Assert
+        var actualException = Assert.ThrowsAsync<InvalidOperationException>(act);
+        Assert.That(actualException.Message, Is.EqualTo(exceptionMessage));
+        
+        Assert.That(foo.Value, Is.Null);
+    }
+
     private async Task<int> Act(Foo foo)
     {
         return await Stage.ExecuteAsync<SampleActor, int>(async actor => await actor.Act(foo));
@@ -142,7 +161,7 @@ public class BasicPlaygroundTests: BasePlayground
     {
         return await Stage.ExecuteAsync<SampleScopedActor, string>(async actor => await actor.Act(foo));
     }
-    
+
     private async Task<SampleResult> Act(SampleCommand command)
     {
         return await Stage.ExecuteAsync<SampleActor, SampleResult>(
