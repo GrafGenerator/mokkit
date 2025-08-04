@@ -7,7 +7,7 @@ namespace Mokkit.Containers.Microsoft.Extensions.DependencyInjection;
 /// Provides service resolution capabilities by accessing services from the test host bag.
 /// This class implements <see cref="IStageResolve"/> to enable service resolution within test stage contexts.
 /// </summary>
-public class StageResolve : IStageResolve
+internal class StageResolve : IStageResolve
 {
     private readonly ITestHostBagAccessor _testHostBagAccessor;
 
