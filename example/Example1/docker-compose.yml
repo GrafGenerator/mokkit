@@ -1,0 +1,35 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: example1-postgres
+    environment:
+      POSTGRES_DB: example1
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - example1-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: example1-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - example1-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  example1-network:
+    driver: bridge

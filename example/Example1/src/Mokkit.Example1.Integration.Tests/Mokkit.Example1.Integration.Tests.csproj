@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPublishable>false</IsPublishable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Mokkit" />
+    <PackageReference Include="Mokkit.Containers.Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Mokkit.Containers.Moq" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="NUnit" />
+    <PackageReference Include="NUnit.Analyzers" />
+    <PackageReference Include="NUnit3TestAdapter" />
+    <PackageReference Include="Respawn" />
+    <PackageReference Include="Verify" />
+    <PackageReference Include="Verify.ClipboardAccept" />
+    <PackageReference Include="Verify.NUnit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="NUnit.Framework"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Mokkit.Example1.Application\Mokkit.Example1.Application.csproj" />
+    <ProjectReference Include="..\Mokkit.Example1.Db.Postgres\Mokkit.Example1.Db.Postgres.csproj" />
+  </ItemGroup>
+
+</Project>
