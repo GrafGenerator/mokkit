@@ -5,11 +5,23 @@ using System.Linq;
 
 namespace Mokkit.Containers.Moq;
 
+/// <summary>
+/// Represents a concrete implementation of <see cref="IMockCollection{TMock}"/> that manages a collection of mock registrations.
+/// This class provides list functionality while adding mock-specific registration methods with validation and fluent API support.
+/// </summary>
+/// <typeparam name="TMock">The type of mock objects managed by this collection.</typeparam>
 public class MockCollection<TMock> : IMockCollection<TMock>
 {
     private readonly List<MockRegistration<TMock>> _mocks = [];
     private bool _isReadOnly;
 
+    /// <summary>
+    /// Adds a new mock registration to the collection using the provided factory method.
+    /// </summary>
+    /// <typeparam name="T">The type of the mock object being registered.</typeparam>
+    /// <param name="factory">A factory method that creates a new instance of the mock object.</param>
+    /// <returns>The current instance of the <see cref="MockCollection{TMock}"/> for fluent API support.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if a mock registration for the same type already exists in the collection.</exception>
     public IMockCollection<TMock> AddMock<T>(Func<TMock> factory)
     {
         var existing = _mocks.FirstOrDefault(x => x.InnerType == typeof(T));
@@ -24,6 +36,12 @@ public class MockCollection<TMock> : IMockCollection<TMock>
         return this;
     }
     
+    /// <summary>
+    /// Adds a new mock registration to the collection using the provided factory method if it does not already exist.
+    /// </summary>
+    /// <typeparam name="T">The type of the mock object being registered.</typeparam>
+    /// <param name="factory">A factory method that creates a new instance of the mock object.</param>
+    /// <returns>The current instance of the <see cref="MockCollection{TMock}"/> for fluent API support.</returns>
     public IMockCollection<TMock> TryAddMock<T>(Func<TMock> factory)
     {
         var existing = _mocks.FirstOrDefault(x => x.InnerType == typeof(T));
@@ -100,6 +118,9 @@ public class MockCollection<TMock> : IMockCollection<TMock>
         set => _mocks[index] = value;
     }
 
+    /// <summary>
+    /// Makes the collection read-only, preventing further modifications.
+    /// </summary>
     public void MakeReadOnly()
     {
         _isReadOnly = true;
