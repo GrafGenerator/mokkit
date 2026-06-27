@@ -1,27 +1,28 @@
 using FluentValidation;
 using FluentValidation.Results;
 using Mokkit.Example1.Application.Features.Client.SaveClient;
+using static Mokkit.Example1.Unit.Tests.Validation.ArrangeCommand;
 
 namespace Mokkit.Example1.Unit.Tests.Validation;
 
 /// <summary>
-/// Unit tests for <c>SaveClientCommandValidator</c>, resolved from the Mokkit stage (no mocks needed).
-/// Same target as the integration validator tests, but driven with xUnit <c>[Theory]</c> + Shouldly.
+/// Unit tests for <c>SaveClientCommandValidator</c>, resolved from the stage. The command is built by a
+/// stage arrange; the result is asserted through an <c>InspectValidation</c> value scope.
 /// </summary>
-public sealed class SaveClientCommandValidatorTests : BaseUnitTest
+public sealed class SaveClientCommandValidatorTests : BaseUnitTest<ValidatorFixture>
 {
-    public SaveClientCommandValidatorTests(StageFixture fixture) : base(fixture)
+    public SaveClientCommandValidatorTests(ValidatorFixture fixture) : base(fixture)
     {
     }
 
     [Fact]
     public async Task Create_WithValidData_Passes()
     {
-        var command = SaveClientCommands.Create();
+        await Arrange.SaveCommand(out var command);
 
         var result = await Validate(command);
 
-        result.IsValid.ShouldBeTrue();
+        await Inspect.Validation(result).IsValid();
     }
 
     [Theory]
@@ -29,11 +30,11 @@ public sealed class SaveClientCommandValidatorTests : BaseUnitTest
     [InlineData(null)]
     public async Task Name_IsRequired(string? name)
     {
-        var command = SaveClientCommands.Create(d => d.Name = name!);
+        await Arrange.SaveCommand(out var command, WithName(name));
 
         var result = await Validate(command);
 
-        result.ShouldBeInvalidFor("ClientData.Name");
+        await Inspect.Validation(result).IsInvalidFor("ClientData.Name");
     }
 
     [Theory]
@@ -41,55 +42,44 @@ public sealed class SaveClientCommandValidatorTests : BaseUnitTest
     [InlineData("")]
     public async Task Email_MustBeValid(string? email)
     {
-        var command = SaveClientCommands.Create(d => d.Email = email!);
+        await Arrange.SaveCommand(out var command, WithEmail(email));
 
         var result = await Validate(command);
 
-        result.ShouldBeInvalidFor("ClientData.Email");
+        await Inspect.Validation(result).IsInvalidFor("ClientData.Email");
     }
 
     [Fact]
     public async Task Phone_IsRequired()
     {
-        var command = SaveClientCommands.Create(d => d.Phone = "");
+        await Arrange.SaveCommand(out var command, WithPhone(""));
 
         var result = await Validate(command);
 
-        result.ShouldBeInvalidFor("ClientData.Phone");
+        await Inspect.Validation(result).IsInvalidFor("ClientData.Phone");
     }
 
     [Fact]
     public async Task Status_MustBePositive()
     {
-        var command = SaveClientCommands.Create(d => d.Status = 0);
+        await Arrange.SaveCommand(out var command, WithStatus(0));
 
         var result = await Validate(command);
 
-        result.ShouldBeInvalidFor("ClientData.Status");
+        await Inspect.Validation(result).IsInvalidFor("ClientData.Status");
     }
 
     [Fact]
     public async Task Update_WithoutId_Fails()
     {
-        var command = SaveClientCommands.Update(Guid.Empty);
+        await Arrange.UpdateCommand(out var command, Guid.Empty);
 
         var result = await Validate(command);
 
-        result.ShouldBeInvalidFor("ClientData.Id");
+        await Inspect.Validation(result).IsInvalidFor("ClientData.Id");
     }
 
-    private Task<ValidationResult> Validate(SaveClientCommand command)
-        => Stage.ExecuteAsync<IValidator<SaveClientCommand>, ValidationResult>(
+    private Task<ValidationResult> Validate(SaveClientCommand command) =>
+        Stage.ExecuteAsync<IValidator<SaveClientCommand>, ValidationResult>(
             validator => validator.ValidateAsync(command));
-}
-
-internal static class ValidationResultShouldExtensions
-{
-    public static void ShouldBeInvalidFor(this ValidationResult result, string propertyName)
-    {
-        result.IsValid.ShouldBeFalse();
-        result.Errors
-            .Select(e => e.PropertyName)
-            .ShouldContain(propertyName);
-    }
 }

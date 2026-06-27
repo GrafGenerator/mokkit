@@ -1,7 +1,7 @@
 using Bogus;
 using Mokkit.Example1.Domain.Entities;
 
-namespace Mokkit.Example1.Unit.Tests;
+namespace Mokkit.Example1.Unit.Tests.Cache;
 
 /// <summary>
 /// Generates realistic <see cref="Client"/> data with Bogus. A fixed seed keeps generation

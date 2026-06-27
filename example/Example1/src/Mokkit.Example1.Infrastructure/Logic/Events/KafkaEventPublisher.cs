@@ -1,34 +1,21 @@
 using System.Text.Json;
 using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Mokkit.Example1.Application.Logic.Messages;
-using Mokkit.Example1.Infrastructure.Options;
 
 namespace Mokkit.Example1.Infrastructure.Logic.Events;
 
-internal sealed class KafkaEventPublisher : IKafkaEventPublisher, IDisposable
+internal sealed class KafkaEventPublisher : IKafkaEventPublisher
 {
     private readonly IProducer<string, string> _producer;
-    private readonly KafkaOptions _kafkaOptions;
     private readonly ILogger<KafkaEventPublisher> _logger;
 
     public KafkaEventPublisher(
-        IOptions<KafkaOptions> kafkaOptions,
+        IProducer<string, string> producer,
         ILogger<KafkaEventPublisher> logger)
     {
-        _kafkaOptions = kafkaOptions.Value;
+        _producer = producer;
         _logger = logger;
-
-        var config = new ProducerConfig
-        {
-            BootstrapServers = _kafkaOptions.BootstrapServers,
-            ClientId = _kafkaOptions.ClientId
-        };
-
-        _producer = new ProducerBuilder<string, string>(config)
-            .SetErrorHandler((_, e) => _logger.LogError("Kafka producer error: {Error}", e.Reason))
-            .Build();
     }
 
     public async Task PublishClientEventAsync(Guid clientId, string eventType, CancellationToken cancellationToken = default)
@@ -66,10 +53,5 @@ internal sealed class KafkaEventPublisher : IKafkaEventPublisher, IDisposable
             _logger.LogError(ex, "Failed to publish client event: {EventType} for client {ClientId}", eventType, clientId);
             throw;
         }
-    }
-
-    public void Dispose()
-    {
-        _producer?.Dispose();
     }
 }

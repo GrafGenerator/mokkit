@@ -4,13 +4,13 @@ using Mokkit.Example1.Domain.Entities;
 namespace Mokkit.Example1.Unit.Tests.Cache;
 
 /// <summary>
-/// Unit tests for the real <c>ClientCacheService</c> with a substituted <c>IDistributedCache</c>.
-/// Same Mokkit Arrange/Act/Inspect flow as the integration suite, but on a wholly different stack
-/// (xUnit + NSubstitute + Shouldly) and with no infrastructure.
+/// Unit tests for the real <c>ClientCacheService</c> (resolved from the stage) with a substituted
+/// <c>IDistributedCache</c>. Every step is a business-named arrange/inspect; the SUT and its dependency
+/// both come from the stage.
 /// </summary>
-public sealed class ClientCacheServiceTests : BaseUnitTest
+public sealed class ClientCacheServiceTests : BaseUnitTest<CacheServiceFixture>
 {
-    public ClientCacheServiceTests(StageFixture fixture) : base(fixture)
+    public ClientCacheServiceTests(CacheServiceFixture fixture) : base(fixture)
     {
     }
 
@@ -18,16 +18,15 @@ public sealed class ClientCacheServiceTests : BaseUnitTest
     public async Task GetClient_WhenCached_ReturnsDeserializedClient()
     {
         // ARRANGE
-        var client = ClientFaker.NewClient();
-        await Arrange.CacheReturns(client);
+        await Arrange.CacheHasClient(out var client);
 
         // ACT
-        var result = await Act(cache => cache.GetClientAsync(client.Id));
+        var result = await GetClient(client.Value!.Id);
 
         // INSPECT
-        result.ShouldNotBeNull();
-        result.ShouldBeEquivalentTo(client);
-        await Inspect.CacheQueried(client.Id);
+        await Inspect
+            .RetrievedClientMatching(result, client.Value!)
+            .CacheQueried(client.Value!.Id);
     }
 
     [Fact]
@@ -35,40 +34,41 @@ public sealed class ClientCacheServiceTests : BaseUnitTest
     {
         // ARRANGE
         var clientId = Guid.NewGuid();
-        await Arrange.CacheEmpty();
+        await Arrange.CacheHasNoClient();
 
         // ACT
-        var result = await Act(cache => cache.GetClientAsync(clientId));
+        var result = await GetClient(clientId);
 
         // INSPECT
-        result.ShouldBeNull();
-        await Inspect.CacheQueried(clientId);
+        await Inspect
+            .RetrievedNothing(result)
+            .CacheQueried(clientId);
     }
 
     [Fact]
     public async Task GetClient_WhenCacheThrows_DegradesToNull()
     {
-        // ARRANGE — the cache is down; the service must swallow it and report a miss.
-        await Arrange.CacheThrowsOnGet();
+        // ARRANGE
+        await Arrange.CacheReadFails();
 
         // ACT
-        var result = await Act(cache => cache.GetClientAsync(Guid.NewGuid()));
+        var result = await GetClient(Guid.NewGuid());
 
         // INSPECT
-        result.ShouldBeNull();
+        await Inspect.RetrievedNothing(result);
     }
 
     [Fact]
     public async Task SetClient_SerializesAndStoresWithExpiry()
     {
         // ARRANGE
-        var client = ClientFaker.NewClient();
+        await Arrange.AClient(out var client);
 
         // ACT
-        await Stage.ExecuteAsync<IClientCacheService>(cache => cache.SetClientAsync(client));
+        await StoreClient(client.Value!);
 
         // INSPECT
-        await Inspect.CacheStored(client);
+        await Inspect.CacheStored(client.Value!);
     }
 
     [Fact]
@@ -78,12 +78,18 @@ public sealed class ClientCacheServiceTests : BaseUnitTest
         var clientId = Guid.NewGuid();
 
         // ACT
-        await Stage.ExecuteAsync<IClientCacheService>(cache => cache.RemoveClientAsync(clientId));
+        await RemoveClient(clientId);
 
         // INSPECT
         await Inspect.CacheRemoved(clientId);
     }
 
-    private Task<Client?> Act(Func<IClientCacheService, Task<Client?>> act)
-        => Stage.ExecuteAsync<IClientCacheService, Client?>(act);
+    private Task<Client?> GetClient(Guid clientId) =>
+        Stage.ExecuteAsync<IClientCacheService, Client?>(cache => cache.GetClientAsync(clientId));
+
+    private Task StoreClient(Client client) =>
+        Stage.ExecuteAsync<IClientCacheService>(cache => cache.SetClientAsync(client));
+
+    private Task RemoveClient(Guid clientId) =>
+        Stage.ExecuteAsync<IClientCacheService>(cache => cache.RemoveClientAsync(clientId));
 }

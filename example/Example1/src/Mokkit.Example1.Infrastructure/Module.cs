@@ -1,6 +1,9 @@
+using Confluent.Kafka;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Mokkit.Example1.Application.Logic.Messages;
 using Mokkit.Example1.Application.Logic.Persistence;
 using Mokkit.Example1.Infrastructure.Kafka.Consumers;
@@ -29,7 +32,40 @@ public static class Module
 
     private static IServiceCollection RegisterKafkaServices(this IServiceCollection services)
     {
+        services.AddSingleton<IProducer<string, string>>(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<KafkaOptions>>().Value;
+            var logger = sp.GetRequiredService<ILogger<IProducer<string, string>>>();
+            var config = new ProducerConfig
+            {
+                BootstrapServers = options.BootstrapServers,
+                ClientId = options.ClientId
+            };
+
+            return new ProducerBuilder<string, string>(config)
+                .SetErrorHandler((_, e) => logger.LogError("Kafka producer error: {Error}", e.Reason))
+                .Build();
+        });
+
+        services.AddSingleton<IConsumer<string, string>>(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<KafkaOptions>>().Value;
+            var logger = sp.GetRequiredService<ILogger<IConsumer<string, string>>>();
+            var config = new ConsumerConfig
+            {
+                BootstrapServers = options.BootstrapServers,
+                GroupId = options.ConsumerGroupId,
+                AutoOffsetReset = AutoOffsetReset.Earliest,
+                EnableAutoCommit = false
+            };
+
+            return new ConsumerBuilder<string, string>(config)
+                .SetErrorHandler((_, e) => logger.LogError("Kafka consumer error: {Error}", e.Reason))
+                .Build();
+        });
+
         services.AddScoped<IKafkaEventPublisher, KafkaEventPublisher>();
+        services.AddSingleton<IClientStatusChangedProcessor, ClientStatusChangedProcessor>();
         services.AddHostedService<ClientEventConsumer>();
         return services;
     }

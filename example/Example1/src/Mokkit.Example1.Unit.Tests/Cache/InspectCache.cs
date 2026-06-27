@@ -4,7 +4,7 @@ using Microsoft.Extensions.Caching.Distributed;
 using Mokkit.Example1.Domain.Entities;
 using Mokkit.Inspect;
 
-namespace Mokkit.Example1.Unit.Tests;
+namespace Mokkit.Example1.Unit.Tests.Cache;
 
 /// <summary>
 /// Inspect building blocks that verify how the service interacted with the substituted cache.
@@ -12,6 +12,18 @@ namespace Mokkit.Example1.Unit.Tests;
 public static class InspectCache
 {
     private static readonly TimeSpan ExpectedExpiration = TimeSpan.FromMinutes(30);
+
+    /// <summary>Asserts the retrieved client equals the expected one (deep value comparison).</summary>
+    public static ITestInspect RetrievedClientMatching(this ITestInspect inspect, Client? result, Client expected)
+    {
+        return inspect.Then(_ => result.ShouldBeEquivalentTo(expected));
+    }
+
+    /// <summary>Asserts nothing was retrieved (cache miss / degraded read).</summary>
+    public static ITestInspect RetrievedNothing(this ITestInspect inspect, Client? result)
+    {
+        return inspect.Then(_ => result.ShouldBeNull());
+    }
 
     /// <summary>Verifies the cache was read once for the client's key.</summary>
     public static ITestInspect CacheQueried(this ITestInspect inspect, Guid clientId)
