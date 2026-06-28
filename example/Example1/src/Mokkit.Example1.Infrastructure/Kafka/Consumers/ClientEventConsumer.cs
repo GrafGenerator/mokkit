@@ -24,6 +24,10 @@ internal sealed class ClientEventConsumer : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // Yield immediately so BackgroundService.StartAsync returns and host startup can complete
+        // (Kestrel binds, etc.); the synchronous Consume poll loop then runs on a background thread.
+        await Task.Yield();
+
         try
         {
             _consumer.Subscribe(new[] { Topic });
