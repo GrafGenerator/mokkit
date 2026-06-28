@@ -36,9 +36,8 @@ USER appuser
 # Copy published application
 COPY --from=publish /app/publish .
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8080/health || exit 1
+# Listen on 8080 (readiness is probed over HTTP at GET /health by the orchestrator / E2E wait strategy).
+ENV ASPNETCORE_URLS=http://+:8080
 
 EXPOSE 8080
 ENTRYPOINT ["dotnet", "Mokkit.Example1.Api.dll"]

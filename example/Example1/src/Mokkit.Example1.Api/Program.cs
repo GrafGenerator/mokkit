@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Mokkit.Example1.Api;
 using Mokkit.Example1.Api.Routes;
 using Mokkit.Example1.Application;
@@ -21,12 +22,22 @@ try
 
     var app = builder.Build();
 
+    // Provision the database schema (apply EF migrations) before serving traffic.
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<ExampleContext>();
+        await dbContext.Database.MigrateAsync();
+    }
+
     // Configure the HTTP request pipeline
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
         app.UseSwaggerUI();
     }
+
+    // Liveness/readiness probe used by container orchestration and E2E wait strategies.
+    app.MapGet("/health", () => Results.Ok(new { status = "healthy" }));
 
     app.MapApiRoutes();
     app.UseExceptionHandler(_ => { });
