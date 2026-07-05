@@ -13,27 +13,36 @@ public sealed class CreateClientFlowTests : BaseE2ETest
     [Fact]
     public async Task Create_ViaApi_IsRetrievable_Persisted_AndAnnounced()
     {
-        // ARRANGE / ACT — creating the client is the operation under test
-        await Arrange
-            .NewClient(out var clientId, WithName("Acme Corporation"), WithEmail("acme@e2e.test"));
+        // ACT — creating the client is the action under test; it yields the write-result artifact
+        var result = await Act(WithName("Acme Corporation"), WithEmail("acme@e2e.test"));
 
-        // INSPECT — the public API, the database, and the emitted domain event all agree
+        // INSPECT — assert the result, then observe downstream effects by its id
         await Inspect
-            .ApiClient(clientId, c =>
+            .WriteResult(result).Created()
+            .ApiClient(result.ClientId!.Value, c =>
             {
                 c.Name.ShouldBe("Acme Corporation");
                 c.Email.ShouldBe("acme@e2e.test");
                 c.Status.ShouldBe((int)ClientStatus.Active);
             })
-            .DbClient(clientId, c => c.ShouldNotBeNull())
-            .EventPublished("clients.created", clientId);
+            .DbClient(result.ClientId!.Value, c => c.ShouldNotBeNull())
+            .EventPublished("clients.created", result.ClientId!.Value);
     }
 
     [Fact]
-    public async Task Create_WithInvalidEmail_IsRejected() =>
-        await Inspect.PostRejected(WithEmail("not-an-email"));
+    public async Task Create_WithInvalidEmail_IsRejected()
+    {
+        // ACT
+        var result = await Act(WithEmail("not-an-email"));
+
+        // INSPECT
+        await Inspect.WriteResult(result).Rejected();
+    }
 
     [Fact]
     public async Task Get_UnknownClient_Returns404() =>
         await Inspect.ApiClientNotFound(Guid.NewGuid());
+
+    private Task<ClientWriteResult> Act(params ClientFieldFn[] fields) =>
+        Stage.ExecuteAsync<HttpClient, ClientWriteResult>(http => ClientApi.CreateAsync(http, Build(fields)));
 }

@@ -53,13 +53,29 @@ public static class InspectClientApi
             response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         }));
 
-    /// <summary>Posts a request expected to be rejected with 400 (negative API-contract check).</summary>
-    public static ITestInspect PostRejected(this ITestInspect inspect, params ClientFieldFn[] fields) =>
-        inspect.Then(async host => await host.ExecuteAsync<HttpClient>(async http =>
+    /// <summary>Opens a value scope over the write-result artifact handed over by the Act.</summary>
+    public static ITestInspectScope<ClientWriteResult> WriteResult(this ITestInspect inspect, ClientWriteResult result) =>
+        inspect.ThenValueScope(result);
+
+    /// <summary>Asserts the create succeeded: 201 Created with a real client id.</summary>
+    public static ITestInspectScope<ClientWriteResult> Created(this ITestInspectScope<ClientWriteResult> inspect) =>
+        inspect.Then((result, _) =>
         {
-            var response = await http.PostAsJsonAsync("/api/v1/clients", ArrangeClientApi.Build(fields));
-            response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        }));
+            result.Status.ShouldBe(HttpStatusCode.Created);
+            result.ClientId.ShouldNotBeNull();
+        });
+
+    /// <summary>Asserts the update succeeded: 200 OK.</summary>
+    public static ITestInspectScope<ClientWriteResult> Updated(this ITestInspectScope<ClientWriteResult> inspect) =>
+        inspect.Then((result, _) => result.Status.ShouldBe(HttpStatusCode.OK));
+
+    /// <summary>Asserts the write was rejected: 400 Bad Request, no client id.</summary>
+    public static ITestInspectScope<ClientWriteResult> Rejected(this ITestInspectScope<ClientWriteResult> inspect) =>
+        inspect.Then((result, _) =>
+        {
+            result.Status.ShouldBe(HttpStatusCode.BadRequest);
+            result.ClientId.ShouldBeNull();
+        });
 
     /// <summary>Reads the row straight from Postgres and asserts on it.</summary>
     public static ITestInspect DbClient(this ITestInspect inspect, Guid clientId, Action<Client?> assert) =>

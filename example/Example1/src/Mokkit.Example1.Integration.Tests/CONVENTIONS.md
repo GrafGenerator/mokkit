@@ -99,6 +99,11 @@ private Task<SaveClientCommandResult> Act(SaveClientCommand command)
            handler => handler.Handle(command).AsTask());
 ```
 
+The `Act` **returns an artifact** (`result`) that the inspects observe — it never asserts, and the inspects
+never perform the action. This is the core AAA rule, documented in full in the E2E suite
+([E2E-CONVENTIONS.md](../Mokkit.Example1.E2E.Tests/E2E-CONVENTIONS.md) §3): *Arrange/Act produce an
+observable artifact; Inspect only observes (reads OK, mutations not).*
+
 ---
 
 ## 5. Inspects

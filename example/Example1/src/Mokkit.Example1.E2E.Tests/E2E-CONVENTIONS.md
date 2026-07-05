@@ -43,17 +43,46 @@ No raw `HttpClient`/`ProduceAsync`/SQL or asserts in test bodies. Helpers live i
   `ApiClientEventually(id, until)` (GET, with polling for async outcomes), `DbClient(id, …)` (direct DB),
   `EventPublished(topic, id)` (Kafka probe).
 
-## 3. Async outcomes → poll, don't sleep
+## 3. Arrange/Act produce artifacts; Inspect only observes (reads OK, mutations not)
+
+This is the load-bearing rule that keeps AAA honest — it applies to **all three suites**.
+
+- **Act** performs the single action under test and **returns an artifact** — an id, a result/response
+  object, or a captured exception: `var result = await Act(...)`. An action that is a natural
+  *precondition* may instead live in **Arrange**, which hands off its artifact via `out Capture<T>`.
+- **Inspect only observes.** It may **read** — a `GET`, a DB query, a Kafka peek, a mock `Received` — and
+  assert on the handed-over artifact. It must **never perform the mutating action under test** (POST/PUT/
+  DELETE, produce a message, invoke the SUT command). *Reads in an inspect are fine; mutations are not.*
+- If an inspect is doing the thing under test, lift it into `Act` and pass the result on. If an `Act`
+  contains assertions, move them to `Inspect` — the `Act` should just return the artifact.
+
+Worked examples here:
+- **Create is the Act** → returns a `ClientWriteResult`
+  ([CreateClientFlowTests](Clients/CreateClientFlowTests.cs)):
+  ```csharp
+  var result = await Act(WithName("Acme"), WithEmail("acme@e2e.test"));   // ACT → artifact
+  await Inspect
+      .WriteResult(result).Created()                     // assert the result
+      .ApiClient(result.ClientId!.Value, c => …)         // observe downstream by its id
+      .EventPublished("clients.created", result.ClientId!.Value);
+  ```
+- **Create as a precondition** → `Arrange.NewClient(out var id, …)` (the update flow needs an existing
+  client first); its status check is a *setup guard*, not the assertion under test.
+- **A rejected write is still an Act**: `var result = await Act(WithEmail("bad")); Inspect.WriteResult(result).Rejected();`
+  — never a POST buried inside an inspect.
+- **`ApiClientNotFound` is a legitimate inspect** — a 404 `GET` is a *read*, not a mutation.
+
+## 4. Async outcomes → poll, don't sleep
 Message-driven effects are eventually consistent. Use `ApiClientEventually(...)` / the `KafkaProbe` which
 poll with a bounded timeout. Never `Task.Delay` a fixed guess.
 
-## 4. Black-box contracts
+## 5. Black-box contracts
 The suite owns its wire DTOs in [Contracts/](Contracts/) — it does **not** reference the service's
 internal request/response types. (Note: the API serialises the status enum as a number, so the contract's
 `Status` is an `int`.) A status-change message must carry the full client record because the consumer
 re-validates it before applying.
 
-## 5. Running
+## 6. Running
 
 Requires Docker. The first run is slow (it builds the API image).
 

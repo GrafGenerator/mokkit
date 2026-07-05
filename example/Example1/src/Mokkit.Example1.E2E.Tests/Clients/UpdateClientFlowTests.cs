@@ -1,5 +1,3 @@
-using System.Net;
-using System.Net.Http.Json;
 using Mokkit.Example1.Domain.Entities;
 using static Mokkit.Example1.E2E.Tests.Clients.ArrangeClientApi;
 
@@ -15,17 +13,18 @@ public sealed class UpdateClientFlowTests : BaseE2ETest
     [Fact]
     public async Task Update_ViaApi_ChangesAreReflected()
     {
-        // ARRANGE — an existing client, confirmed present before we change it
+        // ARRANGE — an existing client (precondition), confirmed present before we change it
         await Arrange
             .NewClient(out var clientId, WithName("Acme Corporation"), WithStatus(ClientStatus.Active));
         await Inspect
             .ApiClient(clientId, c => c.Name.ShouldBe("Acme Corporation"));
 
-        // ACT — update it through the public API
-        await Act(clientId, WithName("Renamed Corporation"), WithStatus(ClientStatus.Suspended));
+        // ACT — update it; the write yields the result artifact
+        var result = await Act(clientId, WithName("Renamed Corporation"), WithStatus(ClientStatus.Suspended));
 
-        // INSPECT — the change is reflected by the API and the database
+        // INSPECT — assert the result, then observe the reflected change
         await Inspect
+            .WriteResult(result).Updated()
             .ApiClient(clientId, c =>
             {
                 c.Name.ShouldBe("Renamed Corporation");
@@ -34,10 +33,6 @@ public sealed class UpdateClientFlowTests : BaseE2ETest
             .DbClient(clientId, c => c!.Status.ShouldBe(ClientStatus.Suspended));
     }
 
-    private Task Act(Guid clientId, params ClientFieldFn[] fields) =>
-        Stage.ExecuteAsync<HttpClient>(async http =>
-        {
-            var response = await http.PutAsJsonAsync($"/api/v1/clients/{clientId}", Build(fields));
-            response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        });
+    private Task<ClientWriteResult> Act(Guid clientId, params ClientFieldFn[] fields) =>
+        Stage.ExecuteAsync<HttpClient, ClientWriteResult>(http => ClientApi.UpdateAsync(http, clientId, Build(fields)));
 }

@@ -106,6 +106,11 @@ await Inspect
 (Cache note: `GetStringAsync`/`SetStringAsync` are extension methods NSubstitute can't intercept, so the
 arrange/inspect helpers configure/verify the real members `GetAsync`/`SetAsync` they delegate to.)
 
+**Act returns an artifact; Inspect only observes.** Every `Act` here hands the inspects a handle to what it
+did — a result value (`Client?`, `bool processed`), a captured `Exception?`, or an effect observable on the
+substitute (`Received`). Inspects then only *observe*; none of them performs the action under test. This is
+the same rule the E2E suite documents in full ([E2E-CONVENTIONS.md](../Mokkit.Example1.E2E.Tests/E2E-CONVENTIONS.md) §3).
+
 ---
 
 ## 4. What's tested (no database)

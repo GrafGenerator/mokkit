@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http.Json;
 using Mokkit.Arrange;
 using Mokkit.Example1.Domain.Entities;
 using Mokkit.Example1.E2E.Tests.Contracts;
@@ -15,7 +14,11 @@ public delegate SaveClientRequest ClientFieldFn(SaveClientRequest request);
 /// </summary>
 public static class ArrangeClientApi
 {
-    /// <summary>Creates a client through the real <c>POST /api/v1/clients</c> and captures its id.</summary>
+    /// <summary>
+    /// Creates a client through the real <c>POST /api/v1/clients</c> as a <b>precondition</b> and captures
+    /// its id (the artifact later steps observe by). The status check here is a setup guard — fail fast if
+    /// the precondition couldn't be established — not the assertion under test.
+    /// </summary>
     public static ITestArrange NewClient(
         this ITestArrange arrange, out Capture<Guid> idCapture, params ClientFieldFn[] fields)
     {
@@ -24,10 +27,9 @@ public static class ArrangeClientApi
         {
             await host.ExecuteAsync<HttpClient>(async http =>
             {
-                var response = await http.PostAsJsonAsync("/api/v1/clients", Build(fields));
-                response.StatusCode.ShouldBe(HttpStatusCode.Created);
-                var body = await response.Content.ReadFromJsonAsync<SaveClientResponse>();
-                capture.Set(body!.ClientId);
+                var result = await ClientApi.CreateAsync(http, Build(fields));
+                result.Status.ShouldBe(HttpStatusCode.Created);
+                capture.Set(result.ClientId!.Value);
             });
         });
     }
