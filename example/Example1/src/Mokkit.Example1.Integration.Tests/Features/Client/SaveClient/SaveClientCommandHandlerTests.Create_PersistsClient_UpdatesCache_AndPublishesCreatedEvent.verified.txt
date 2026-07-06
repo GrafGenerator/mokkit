@@ -1,0 +1,9 @@
+﻿{
+  Id: 11111111-1111-1111-1111-111111111111,
+  Name: Acme Corporation,
+  Email: contact@acme.test,
+  Phone: +15555550100,
+  Status: Active,
+  CreatedAt: DateTime_1,
+  UpdatedAt: DateTime_1
+}

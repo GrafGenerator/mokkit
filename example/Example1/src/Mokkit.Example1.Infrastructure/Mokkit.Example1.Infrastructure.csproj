@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+      <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+      <PackageReference Include="Confluent.Kafka" />
+      <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" />
+      <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Mokkit.Example1.Application\Mokkit.Example1.Application.csproj" />
+      <ProjectReference Include="..\Mokkit.Example1.Common\Mokkit.Example1.Common.csproj" />
+      <ProjectReference Include="..\Mokkit.Example1.Domain\Mokkit.Example1.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <InternalsVisibleTo Include="Mokkit.Example1.Tests" />
+      <InternalsVisibleTo Include="Mokkit.Example1.Unit.Tests" />
+      <!-- Lets NSubstitute/Castle DynamicProxy fake internal interfaces (e.g. IClientStatusChangedProcessor). -->
+      <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+    </ItemGroup>
+
+</Project>
