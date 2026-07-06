@@ -8,15 +8,15 @@ namespace Mokkit.Playground.CaptureTests;
 
 public static class SampleArrange
 {
-    public static ITestArrange ArrangeFoo(this ITestArrange arrange, out Capture<Foo> fooCapture, int innerValue,
+    public static ITestArrange ArrangeFoo(this ITestArrange arrange, out Trapture<Foo> fooCapture, int innerValue,
         string? innerStringValue = null)
     {
-        var capture = Capture.Start(out fooCapture);
+        var capture = Trapture.Start(out fooCapture);
 
         return arrange.Then(_ => { capture.Set(new Foo(innerValue, innerStringValue)); });
     }
 
-    public static ITestArrange ArrangeBar(this ITestArrange arrange, out Capture<Bar> barCapture, Capture<Foo> foo)
+    public static ITestArrange ArrangeBar(this ITestArrange arrange, out Capture<Bar> barCapture, Trapture<Foo> foo)
     {
         var capture = Capture.Start(out barCapture);
 
@@ -65,9 +65,9 @@ public static class SampleArrange
 
     public static ITestArrange ArrangeSampleCommand(
         this ITestArrange arrange,
-        out Capture<SampleCommand> commandCapture, bool success = true, int code = 123, string value = "123")
+        out Trapture<SampleCommand> commandCapture, bool success = true, int code = 123, string value = "123")
     {
-        var capture = Capture.Start(out commandCapture);
+        var capture = Trapture.Start(out commandCapture);
 
         return arrange.Then(_ =>
         {
