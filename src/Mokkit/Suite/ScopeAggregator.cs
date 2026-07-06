@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Mokkit.Containers;
@@ -8,11 +9,13 @@ namespace Mokkit.Suite;
 /// <summary>
 /// Internal class that aggregates multiple dependency container scopes and provides unified service resolution.
 /// This class manages the lifecycle of multiple container scopes and implements caching for resolved services.
+/// Resolution is thread-safe so that concurrent inspect steps (see <c>ITestInspect.ThenAll</c>) can resolve services
+/// in parallel; each type is resolved at most once thanks to the cached <see cref="Lazy{T}"/> factories.
 /// </summary>
 internal class ScopeAggregator : IDisposable
 {
     private readonly TestHostContext _context;
-    private readonly Dictionary<Type, object> _resolveCache = new();
+    private readonly ConcurrentDictionary<Type, Lazy<object>> _resolveCache = new();
     private readonly List<IDependencyContainerScope> _scopes = new();
 
     /// <summary>
@@ -55,23 +58,14 @@ internal class ScopeAggregator : IDisposable
     {
         var type = typeof(T);
 
-        if (_resolveCache.TryGetValue(type, out var service))
-        {
-            return (T)service;
-        }
+        // Lazy guarantees the resolution runs at most once per type, even under concurrent Resolve calls.
+        var lazy = _resolveCache.GetOrAdd(type, _ => new Lazy<object>(() =>
+            _scopes
+                .Select(x => x.TryResolve<T>())
+                .FirstOrDefault(x => x != null)
+            ?? throw new InvalidOperationException($"Cannot find type {type} in registered containers")));
 
-        var resolvedService = _scopes
-            .Select(x => x.TryResolve<T>())
-            .FirstOrDefault(x => x != null);
-
-        if (resolvedService == null)
-        {
-            throw new InvalidOperationException($"Cannot find type {type} in registered containers");
-        }
-
-        _resolveCache[type] = resolvedService;
-
-        return resolvedService;
+        return (T)lazy.Value;
     }
 
     /// <summary>

@@ -32,4 +32,24 @@ internal static class EnsureUsageExamples
             // direct-value overload — already-materialized string
             .Ensure(artifact.Name, out string _);
     }
+
+    private static async Task ParallelInspectUsage(ITestInspect inspect)
+    {
+        await inspect
+            .Then(_ => { })
+            // raw async parallel group — these two overlap; steps before/after stay sequential
+            .ThenAll(
+                async _ => await Task.CompletedTask,
+                async _ => await Task.CompletedTask)
+            // raw sync parallel group
+            .ThenAll(
+                _ => { },
+                _ => { })
+            // branch-builder group — each branch is its own sub-chain of fluent helpers, built with the
+            // same chain style; branches overlap, steps within a branch stay sequential
+            .ThenAll(
+                b => b.Then(_ => { }).Then(_ => { }),
+                b => b.Then(_ => { }))
+            .Then(_ => { });
+    }
 }

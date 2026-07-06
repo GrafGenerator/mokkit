@@ -73,6 +73,36 @@ internal class TestInspectScope<T> : ITestInspectScope<T>
     }
 
     /// <summary>
+    /// Adds a parallel inspect group by forwarding to the parent inspect chain.
+    /// </summary>
+    /// <param name="inspectFns">The asynchronous inspect functions to run in parallel.</param>
+    /// <returns>The parent inspect instance for method chaining.</returns>
+    public ITestInspect ThenAll(params InspectAsyncFn[] inspectFns)
+    {
+        return _parent.ThenAll(inspectFns);
+    }
+
+    /// <summary>
+    /// Adds a parallel inspect group by forwarding to the parent inspect chain.
+    /// </summary>
+    /// <param name="inspectFns">The synchronous inspect functions to run in parallel.</param>
+    /// <returns>The parent inspect instance for method chaining.</returns>
+    public ITestInspect ThenAll(params InspectFn[] inspectFns)
+    {
+        return _parent.ThenAll(inspectFns);
+    }
+
+    /// <summary>
+    /// Adds a parallel inspect branch group by forwarding to the parent inspect chain.
+    /// </summary>
+    /// <param name="branches">The branch builders to run in parallel.</param>
+    /// <returns>The parent inspect instance for method chaining.</returns>
+    public ITestInspect ThenAll(params Func<ITestInspect, ITestInspect>[] branches)
+    {
+        return _parent.ThenAll(branches);
+    }
+
+    /// <summary>
     /// Adds a value scope to the scope.
     /// </summary>
     /// <param name="value">The value to add to the scope.</param>
