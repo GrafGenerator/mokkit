@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mokkit.Containers.Bag", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mokkit.Tests", "src\Mokkit.Tests\Mokkit.Tests.csproj", "{FA058646-2DAA-477F-8C55-3F3B7676FE77}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mokkit.Containers.Common", "src\Mokkit.Containers.Common\Mokkit.Containers.Common.csproj", "{37D8F32B-C3C5-4EB7-972A-E697F0F21071}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -102,6 +104,18 @@ Global
 		{FA058646-2DAA-477F-8C55-3F3B7676FE77}.Release|x64.Build.0 = Release|Any CPU
 		{FA058646-2DAA-477F-8C55-3F3B7676FE77}.Release|x86.ActiveCfg = Release|Any CPU
 		{FA058646-2DAA-477F-8C55-3F3B7676FE77}.Release|x86.Build.0 = Release|Any CPU
+		{37D8F32B-C3C5-4EB7-972A-E697F0F21071}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37D8F32B-C3C5-4EB7-972A-E697F0F21071}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37D8F32B-C3C5-4EB7-972A-E697F0F21071}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{37D8F32B-C3C5-4EB7-972A-E697F0F21071}.Debug|x64.Build.0 = Debug|Any CPU
+		{37D8F32B-C3C5-4EB7-972A-E697F0F21071}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{37D8F32B-C3C5-4EB7-972A-E697F0F21071}.Debug|x86.Build.0 = Debug|Any CPU
+		{37D8F32B-C3C5-4EB7-972A-E697F0F21071}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37D8F32B-C3C5-4EB7-972A-E697F0F21071}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37D8F32B-C3C5-4EB7-972A-E697F0F21071}.Release|x64.ActiveCfg = Release|Any CPU
+		{37D8F32B-C3C5-4EB7-972A-E697F0F21071}.Release|x64.Build.0 = Release|Any CPU
+		{37D8F32B-C3C5-4EB7-972A-E697F0F21071}.Release|x86.ActiveCfg = Release|Any CPU
+		{37D8F32B-C3C5-4EB7-972A-E697F0F21071}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -109,5 +123,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{85429198-F2B4-45EA-B401-05775ADD3132} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{FA058646-2DAA-477F-8C55-3F3B7676FE77} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{37D8F32B-C3C5-4EB7-972A-E697F0F21071} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 EndGlobal

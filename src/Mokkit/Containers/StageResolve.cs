@@ -1,13 +1,13 @@
 using System;
 using Mokkit.Suite;
 
-namespace Mokkit.Containers.Microsoft.Extensions.DependencyInjection;
+namespace Mokkit.Containers;
 
 /// <summary>
-/// Provides service resolution capabilities by accessing services from the test host bag.
-/// This class implements <see cref="IStageResolve"/> to enable service resolution within test stage contexts.
+/// Resolves services from the test host bag. DI container adapters register this as their
+/// <see cref="IStageResolve"/> implementation so stage-provided instances (e.g. mocks) can be injected into the real graph.
 /// </summary>
-internal class StageResolve : IStageResolve
+public class StageResolve : IStageResolve
 {
     private readonly ITestHostBagAccessor _testHostBagAccessor;
 
@@ -19,10 +19,9 @@ internal class StageResolve : IStageResolve
     {
         _testHostBagAccessor = testHostBagAccessor;
     }
-    
+
     /// <summary>
     /// Resolves a service of the specified type from the test host bag.
-    /// This method provides access to services that have been registered in the test host bag during test execution.
     /// </summary>
     /// <param name="serviceType">The type of service to resolve.</param>
     /// <returns>An instance of the requested service type from the test host bag, or <c>null</c> if not found.</returns>
@@ -30,7 +29,7 @@ internal class StageResolve : IStageResolve
     public object? Resolve(Type serviceType)
     {
         var bag = _testHostBagAccessor.Bag;
-        
+
         if (bag == null)
         {
             throw new InvalidOperationException("Stage resolver is in corrupt state, test host bag is missing.");

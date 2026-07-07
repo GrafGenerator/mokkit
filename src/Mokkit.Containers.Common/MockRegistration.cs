@@ -1,6 +1,6 @@
 using System;
 
-namespace Mokkit.Containers.Moq;
+namespace Mokkit.Containers.Common;
 
 /// <summary>
 /// Represents a registration entry for a mock object, containing the type information and factory function.

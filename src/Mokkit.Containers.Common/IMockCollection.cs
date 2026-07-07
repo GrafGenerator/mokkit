@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Mokkit.Containers.Moq;
+namespace Mokkit.Containers.Common;
 
 /// <summary>
 /// Represents a collection of mock registrations that provides fluent registration methods for mock objects.
@@ -27,7 +27,7 @@ public interface IMockCollection<TMock> : IList<MockRegistration<TMock>>
     /// <param name="factory">The factory function that creates the mock instance.</param>
     /// <returns>The current <see cref="IMockCollection{TMock}"/> instance for method chaining.</returns>
     IMockCollection<TMock> TryAddMock<T>(Func<TMock> factory);
-    
+
     /// <summary>
     /// Gets a read-only collection of all mock registrations in this collection.
     /// </summary>
