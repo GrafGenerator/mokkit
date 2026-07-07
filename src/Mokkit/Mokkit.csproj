@@ -16,4 +16,15 @@
     <PackageTags>mokkit,mock,mocks,tests,test,arrange,act,assert,organize</PackageTags>
   </PropertyGroup>
 
+  <!-- Bundle the source generator into this package (analyzers/dotnet/cs) and run it during this build. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Mokkit.SourceGenerators\Mokkit.SourceGenerators.csproj"
+                      OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Mokkit.SourceGenerators\bin\$(Configuration)\netstandard2.0\Mokkit.SourceGenerators.dll"
+          Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+  </ItemGroup>
+
 </Project>
