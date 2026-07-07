@@ -1,13 +1,13 @@
-using System;
-
 namespace Mokkit;
 
 /// <summary>
-/// Represents a type-safe value capture mechanism that allows capturing and retrieving values during test execution.
-/// This class provides implicit conversion to the captured type and ensures type safety throughout the test lifecycle.
+/// Represents a type-safe, <b>explicit</b> value capture used to carry a value produced during one test phase
+/// into a later one. Unlike <see cref="Trapture{T}"/>, this type does <b>not</b> convert implicitly to the
+/// captured type — consumers must read <see cref="Value"/> explicitly, forcing the intent to be visible at the
+/// use site.
 /// </summary>
 /// <typeparam name="T">The type of value to capture.</typeparam>
-public class Capture<T>: ICaptureInitializer<T>
+public class Capture<T> : ICapture<T>, ICaptureInitializer<T>
 {
     /// <summary>
     /// Gets the captured value.
@@ -23,17 +23,6 @@ public class Capture<T>: ICaptureInitializer<T>
     }
 
     /// <summary>
-    /// Provides implicit conversion from <see cref="Capture{T}"/> to the captured type.
-    /// </summary>
-    /// <param name="capture">The capture instance to convert.</param>
-    /// <returns>The captured value.</returns>
-    /// <exception cref="InvalidOperationException">Thrown when the capture has not been initialized with a value.</exception>
-    public static implicit operator T(Capture<T> capture)
-    {
-        return capture.Value ?? throw new InvalidOperationException("Capture is not initialized");
-    }
-
-    /// <summary>
     /// Sets the captured value. This method is called internally by the capture system.
     /// </summary>
     /// <param name="value">The value to capture.</param>
@@ -44,7 +33,7 @@ public class Capture<T>: ICaptureInitializer<T>
 }
 
 /// <summary>
-/// Provides static factory methods for creating capture instances.
+/// Provides static factory methods for creating <see cref="Capture{T}"/> instances.
 /// </summary>
 public static class Capture
 {

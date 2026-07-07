@@ -1,0 +1,240 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
+
+namespace Mokkit.SourceGenerators;
+
+/// <summary>
+/// Generates the body of arrange-extension methods marked with <c>[MokkitCapture]</c>: it starts a capture for the
+/// <c>out Capture&lt;T&gt;</c>/<c>out Trapture&lt;T&gt;</c> parameter and, when the arrange runs, sets it to
+/// <c>new T(...)</c> built from the method's remaining parameters (forwarded positionally).
+/// </summary>
+[Generator]
+public sealed class CaptureArrangeGenerator : IIncrementalGenerator
+{
+    private const string AttributeMetadataName = "Mokkit.MokkitCaptureAttribute";
+
+    /// <inheritdoc />
+    public void Initialize(IncrementalGeneratorInitializationContext context)
+    {
+        var methods = context.SyntaxProvider
+            .ForAttributeWithMetadataName(
+                AttributeMetadataName,
+                predicate: static (node, _) => node is MethodDeclarationSyntax,
+                transform: static (ctx, _) => From(ctx))
+            .Where(static m => m is not null);
+
+        context.RegisterSourceOutput(methods, static (ctx, method) => Emit(ctx, method!));
+    }
+
+    private static CaptureMethod? From(GeneratorAttributeSyntaxContext context)
+    {
+        if (context.TargetSymbol is not IMethodSymbol method)
+        {
+            return null;
+        }
+
+        if (context.TargetNode is not MethodDeclarationSyntax syntax)
+        {
+            return null;
+        }
+
+        if (method.Parameters.Length < 2)
+        {
+            return null;
+        }
+
+        // The extension receiver is the first parameter.
+        var arrangeParam = method.Parameters[0];
+
+        IParameterSymbol? captureParam = null;
+        string? variant = null;
+        ITypeSymbol? innerType = null;
+
+        foreach (var parameter in method.Parameters)
+        {
+            if (parameter.RefKind != RefKind.Out)
+            {
+                continue;
+            }
+
+            if (parameter.Type is not INamedTypeSymbol named || named.TypeArguments.Length != 1)
+            {
+                continue;
+            }
+
+            var definition = named.OriginalDefinition;
+            if (definition.ContainingNamespace?.ToDisplayString() != "Mokkit")
+            {
+                continue;
+            }
+
+            if (definition.Name == "Capture")
+            {
+                variant = "Capture";
+            }
+            else if (definition.Name == "Trapture")
+            {
+                variant = "Trapture";
+            }
+            else
+            {
+                continue;
+            }
+
+            captureParam = parameter;
+            innerType = named.TypeArguments[0];
+            break;
+        }
+
+        if (captureParam is null || variant is null || innerType is null)
+        {
+            return null;
+        }
+
+        var forwarded = method.Parameters
+            .Where(p => !SymbolEqualityComparer.Default.Equals(p, arrangeParam)
+                        && !SymbolEqualityComparer.Default.Equals(p, captureParam))
+            .ToList();
+
+        var innerTypeFullName = innerType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var construction = BuildConstruction(innerType, innerTypeFullName, forwarded);
+
+        var usings = new StringBuilder();
+        foreach (var directive in syntax.SyntaxTree.GetCompilationUnitRoot().Usings)
+        {
+            usings.AppendLine(directive.ToString());
+        }
+
+        for (SyntaxNode? node = syntax.Parent; node is not null; node = node.Parent)
+        {
+            if (node is BaseNamespaceDeclarationSyntax namespaceDeclaration)
+            {
+                foreach (var directive in namespaceDeclaration.Usings)
+                {
+                    usings.AppendLine(directive.ToString());
+                }
+            }
+        }
+
+        var containingNamespace = method.ContainingType.ContainingNamespace;
+        var namespaceName = containingNamespace is { IsGlobalNamespace: false }
+            ? containingNamespace.ToDisplayString()
+            : null;
+
+        return new CaptureMethod(
+            namespaceName,
+            method.ContainingType.Name,
+            method.ContainingType.IsStatic,
+            usings.ToString(),
+            syntax.Modifiers.ToString(),
+            syntax.ReturnType.ToString(),
+            syntax.Identifier.Text,
+            syntax.ParameterList.ToString(),
+            arrangeParam.Name,
+            captureParam.Name,
+            variant,
+            construction);
+    }
+
+    // Chooses how to construct the captured value: a positional constructor when the type has an explicit ctor whose
+    // arity matches (positional records, classes with ctors), otherwise an object initializer mapping each parameter
+    // to a settable/init property by name (init-property records and mutable classes).
+    private static string BuildConstruction(ITypeSymbol type, string fullName, List<IParameterSymbol> args)
+    {
+        if (args.Count > 0 && type is INamedTypeSymbol named)
+        {
+            var hasMatchingCtor = named.InstanceConstructors.Any(c =>
+                !c.IsImplicitlyDeclared && c.Parameters.Length == args.Count);
+
+            if (!hasMatchingCtor)
+            {
+                var assignments = args.Select(p =>
+                {
+                    var property = named.GetMembers()
+                        .OfType<IPropertySymbol>()
+                        .FirstOrDefault(pr => pr.SetMethod is not null
+                                              && string.Equals(pr.Name, p.Name, System.StringComparison.OrdinalIgnoreCase));
+
+                    var propertyName = property?.Name ?? Capitalize(p.Name);
+                    return $"{propertyName} = {p.Name}";
+                });
+
+                return $"new {fullName} {{ {string.Join(", ", assignments)} }}";
+            }
+        }
+
+        return $"new {fullName}({string.Join(", ", args.Select(p => p.Name))})";
+    }
+
+    private static string Capitalize(string name)
+        => name.Length == 0 ? name : char.ToUpperInvariant(name[0]) + name.Substring(1);
+
+    private static void Emit(SourceProductionContext context, CaptureMethod method)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine("// <auto-generated/>");
+        builder.AppendLine("#nullable enable");
+        builder.Append(method.UsingsText);
+        builder.AppendLine();
+
+        var indent = string.Empty;
+        if (method.Namespace is not null)
+        {
+            builder.AppendLine($"namespace {method.Namespace}");
+            builder.AppendLine("{");
+            indent = "    ";
+        }
+
+        var staticKeyword = method.ClassIsStatic ? "static " : string.Empty;
+        builder.AppendLine($"{indent}{staticKeyword}partial class {method.ClassName}");
+        builder.AppendLine($"{indent}{{");
+        builder.AppendLine($"{indent}    {method.Modifiers} {method.ReturnType} {method.MethodName}{method.ParameterList}");
+        builder.AppendLine($"{indent}    {{");
+        builder.AppendLine($"{indent}        var __initializer = global::Mokkit.{method.Variant}.Start(out {method.CaptureParamName});");
+        builder.AppendLine($"{indent}        return {method.ArrangeParamName}.Then(__host => __initializer.Set({method.Construction}));");
+        builder.AppendLine($"{indent}    }}");
+        builder.AppendLine($"{indent}}}");
+
+        if (method.Namespace is not null)
+        {
+            builder.AppendLine("}");
+        }
+
+        var hintName = $"{method.ClassName}_{method.MethodName}_{Fnv1a(method.ParameterList)}.g.cs";
+        context.AddSource(hintName, SourceText.From(builder.ToString(), Encoding.UTF8));
+    }
+
+    // Deterministic hash so overloaded marked methods get distinct hint names (string.GetHashCode is randomized).
+    private static string Fnv1a(string value)
+    {
+        unchecked
+        {
+            uint hash = 2166136261;
+            foreach (var c in value)
+            {
+                hash = (hash ^ c) * 16777619;
+            }
+
+            return hash.ToString("x8");
+        }
+    }
+}
+
+internal sealed record CaptureMethod(
+    string? Namespace,
+    string ClassName,
+    bool ClassIsStatic,
+    string UsingsText,
+    string Modifiers,
+    string ReturnType,
+    string MethodName,
+    string ParameterList,
+    string ArrangeParamName,
+    string CaptureParamName,
+    string Variant,
+    string Construction);

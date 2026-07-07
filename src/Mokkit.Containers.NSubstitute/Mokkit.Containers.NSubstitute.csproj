@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+
+    <Version>0.3.0</Version>
+    <Title>Mokkit.Containers.NSubstitute</Title>
+    <Authors>Nikita Ivanov a.k.a GrafGenerator </Authors>
+    <Description>Container wrapper of NSubstitute for Mokkit.</Description>
+    <Copyright>Nikita Ivanov</Copyright>
+    <PackageProjectUrl>https://github.com/GrafGenerator/mokkit</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/GrafGenerator/mokkit/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/GrafGenerator/mokkit</RepositoryUrl>
+    <RepositoryType>github</RepositoryType>
+    <PackageTags>mokkit,mock,mocks,tests,test,arrange,act,assert,organize,nsubstitute</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NSubstitute" Version="5.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Mokkit\Mokkit.csproj" />
+    <ProjectReference Include="..\Mokkit.Containers.Common\Mokkit.Containers.Common.csproj" />
+  </ItemGroup>
+
+</Project>

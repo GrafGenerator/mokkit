@@ -21,6 +21,31 @@ public interface ITestInspect
     ITestInspect Then(InspectFn inspectFn);
 
     /// <summary>
+    /// Chains a group of asynchronous inspect functions that execute concurrently with one another.
+    /// Steps chained before and after run sequentially; only the functions passed to this single call overlap.
+    /// </summary>
+    /// <param name="inspectFns">The asynchronous inspect functions to run in parallel.</param>
+    /// <returns>The current <see cref="ITestInspect"/> instance for method chaining.</returns>
+    ITestInspect ThenAll(params InspectAsyncFn[] inspectFns);
+
+    /// <summary>
+    /// Chains a group of synchronous inspect functions that execute concurrently with one another.
+    /// Steps chained before and after run sequentially; only the functions passed to this single call overlap.
+    /// </summary>
+    /// <param name="inspectFns">The synchronous inspect functions to run in parallel.</param>
+    /// <returns>The current <see cref="ITestInspect"/> instance for method chaining.</returns>
+    ITestInspect ThenAll(params InspectFn[] inspectFns);
+
+    /// <summary>
+    /// Chains a group of inspect branches that execute concurrently with one another. Each branch is built with the
+    /// same fluent inspect helpers and runs its own steps sequentially; the branches overlap. Use this to parallelize
+    /// a chain composed from extension-method helpers (e.g. <c>b =&gt; b.ApiClient(id, ...)</c>).
+    /// </summary>
+    /// <param name="branches">The branch builders; each receives a fresh sub-chain bound to the same stage.</param>
+    /// <returns>The current <see cref="ITestInspect"/> instance for method chaining.</returns>
+    ITestInspect ThenAll(params System.Func<ITestInspect, ITestInspect>[] branches);
+
+    /// <summary>
     /// Creates a value-scoped inspection that operates on a specific value.
     /// This allows for focused assertions on a particular value within a scoped context.
     /// </summary>

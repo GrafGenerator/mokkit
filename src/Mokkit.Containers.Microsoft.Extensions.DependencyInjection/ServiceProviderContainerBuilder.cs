@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Mokkit.Containers;
 using Mokkit.Suite;
 
 namespace Mokkit.Containers.Microsoft.Extensions.DependencyInjection;

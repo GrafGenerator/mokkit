@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Mokkit.Suite;
 
@@ -6,12 +8,14 @@ namespace Mokkit.Inspect;
 
 /// <summary>
 /// Internal implementation of <see cref="ITestInspect"/> that manages the execution of inspect functions in the AAA pattern.
-/// This class collects and executes inspect functions sequentially during the test assertion/verification phase.
+/// Inspect steps are collected as ordered groups: sequential steps (added via <see cref="Then(InspectAsyncFn)"/>) run one
+/// after another, while a group added via <see cref="ThenAll(InspectAsyncFn[])"/> runs its functions concurrently. Groups
+/// always execute in the order they were added, so <c>Then</c>/<c>ThenAll</c> ordering is preserved.
 /// </summary>
 internal class TestInspect : ITestInspect
 {
     private readonly TestStage _stage;
-    private readonly List<InspectAsyncFn> _inspectFns = new();
+    private readonly List<StepGroup> _groups = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TestInspect"/> class with a test stage.
@@ -22,7 +26,7 @@ internal class TestInspect : ITestInspect
     {
         _stage = stage;
     }
-    
+
     /// <summary>
     /// Initializes a new instance of the <see cref="TestInspect"/> class with a synchronous inspect function.
     /// The synchronous function is wrapped in an async delegate for uniform execution.
@@ -30,11 +34,7 @@ internal class TestInspect : ITestInspect
     /// <param name="inspectFn">The synchronous inspect function to execute.</param>
     internal TestInspect(InspectFn inspectFn)
     {
-        _inspectFns.Add(host =>
-        {
-            inspectFn(host);
-            return Task.CompletedTask;
-        });
+        AddSequential(Wrap(inspectFn));
     }
 
     /// <summary>
@@ -43,34 +43,76 @@ internal class TestInspect : ITestInspect
     /// <param name="inspectFn">The asynchronous inspect function to execute.</param>
     internal TestInspect(InspectAsyncFn inspectFn)
     {
-        _inspectFns.Add(inspectFn);
+        AddSequential(inspectFn);
     }
 
     /// <summary>
-    /// Adds an asynchronous inspect function to the execution pipeline.
+    /// Adds an asynchronous inspect function to the execution pipeline as a sequential step.
     /// </summary>
     /// <param name="inspectFn">The asynchronous inspect function to add.</param>
     /// <returns>The current <see cref="ITestInspect"/> instance for fluent chaining.</returns>
     public ITestInspect Then(InspectAsyncFn inspectFn)
     {
-        _inspectFns.Add(inspectFn);
+        AddSequential(inspectFn);
         return this;
     }
-    
+
     /// <summary>
-    /// Adds a synchronous inspect function to the execution pipeline.
+    /// Adds a synchronous inspect function to the execution pipeline as a sequential step.
     /// The synchronous function is wrapped in an async delegate for uniform execution.
     /// </summary>
     /// <param name="inspectFn">The synchronous inspect function to add.</param>
     /// <returns>The current <see cref="ITestInspect"/> instance for fluent chaining.</returns>
     public ITestInspect Then(InspectFn inspectFn)
     {
-        _inspectFns.Add(host =>
-        { 
-            inspectFn(host);
-            return Task.CompletedTask;
-        });
-        
+        AddSequential(Wrap(inspectFn));
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a group of asynchronous inspect functions that execute <b>concurrently</b> with one another.
+    /// Steps added before and after this group still run sequentially — only the functions within this single call overlap.
+    /// </summary>
+    /// <param name="inspectFns">The asynchronous inspect functions to run in parallel.</param>
+    /// <returns>The current <see cref="ITestInspect"/> instance for fluent chaining.</returns>
+    public ITestInspect ThenAll(params InspectAsyncFn[] inspectFns)
+    {
+        _groups.Add(new StepGroup(true, inspectFns));
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a group of synchronous inspect functions that execute <b>concurrently</b> with one another.
+    /// Each function is wrapped in an async delegate for uniform execution.
+    /// </summary>
+    /// <param name="inspectFns">The synchronous inspect functions to run in parallel.</param>
+    /// <returns>The current <see cref="ITestInspect"/> instance for fluent chaining.</returns>
+    public ITestInspect ThenAll(params InspectFn[] inspectFns)
+    {
+        _groups.Add(new StepGroup(true, Array.ConvertAll(inspectFns, Wrap)));
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a group of inspect branches that execute <b>concurrently</b> with one another, where each branch is built
+    /// with the same fluent inspect helpers (e.g. <c>b =&gt; b.ApiClient(id, ...).DbClient(id, ...)</c>). Steps within a
+    /// branch run sequentially; the branches themselves overlap. This is the way to parallelize a chain that is composed
+    /// from extension-method helpers rather than raw host lambdas.
+    /// </summary>
+    /// <param name="branches">The branch builders; each receives a fresh sub-chain bound to the same stage.</param>
+    /// <returns>The current <see cref="ITestInspect"/> instance for fluent chaining.</returns>
+    public ITestInspect ThenAll(params Func<ITestInspect, ITestInspect>[] branches)
+    {
+        var branchFns = new InspectAsyncFn[branches.Length];
+
+        for (var i = 0; i < branches.Length; i++)
+        {
+            var branch = new TestInspect(_stage);
+            branches[i](branch);
+            branchFns[i] = _ => branch.DoInspectAsync();
+        }
+
+        _groups.Add(new StepGroup(true, branchFns));
         return this;
     }
 
@@ -84,14 +126,14 @@ internal class TestInspect : ITestInspect
     public ITestInspectScope<T> ThenValueScope<T>(T value, InspectScopeAsyncFn? inspectScopeFn = null)
     {
         var innerFns = new List<InspectValueAsyncFn<T>>();
-        
+
         var scopeFn = inspectScopeFn ?? (async (_, executeInnerFns) =>
         {
             await executeInnerFns();
         });
-        
-        _inspectFns.Add(host => scopeFn(host, ExecuteInnerFns));
-        
+
+        AddSequential(host => scopeFn(host, ExecuteInnerFns));
+
         return new TestInspectScope<T>(innerFns, this);
 
         async Task ExecuteInnerFns()
@@ -102,7 +144,7 @@ internal class TestInspect : ITestInspect
             }
         }
     }
-    
+
     /// <summary>
     /// Creates a new scope for inspecting a value with a context and an optional scope function.
     /// </summary>
@@ -115,14 +157,14 @@ internal class TestInspect : ITestInspect
     public ITestInspectScopeWithContext<T, TContext> ThenValueScope<T, TContext>(T value, TContext context, InspectScopeAsyncFn? inspectScopeFn = null)
     {
         var innerFns = new List<InspectValueWithContextAsyncFn<T, TContext>>();
-        
+
         var scopeFn = inspectScopeFn ?? (async (_, executeInnerFns) =>
         {
             await executeInnerFns();
         });
-        
-        _inspectFns.Add(host => scopeFn(host, ExecuteInnerFns));
-        
+
+        AddSequential(host => scopeFn(host, ExecuteInnerFns));
+
         return new TestInspectScopeWithContext<T, TContext>(innerFns, this);
 
         async Task ExecuteInnerFns()
@@ -133,20 +175,33 @@ internal class TestInspect : ITestInspect
             }
         }
     }
-    
+
     /// <summary>
-    /// Executes all registered inspect functions sequentially in the order they were added.
-    /// This method is called internally during the test execution lifecycle to perform the assertion/verification phase.
+    /// Executes all registered inspect groups in the order they were added.
+    /// Sequential groups run their function inline; parallel groups run their functions concurrently via <see cref="Task.WhenAll(System.Collections.Generic.IEnumerable{Task})"/>.
+    /// The scope/bag is established once up front so concurrent steps resolve services safely.
     /// </summary>
     /// <returns>A task that represents the asynchronous inspect operation.</returns>
     internal async Task DoInspectAsync()
     {
-        foreach (var inspectFn in _inspectFns)
+        _stage?.PrepareForInspect();
+
+        foreach (var group in _groups)
         {
-            await inspectFn(_stage);
+            if (group.Parallel && group.Fns.Count > 1)
+            {
+                await Task.WhenAll(group.Fns.Select(fn => fn(_stage)));
+            }
+            else
+            {
+                foreach (var fn in group.Fns)
+                {
+                    await fn(_stage);
+                }
+            }
         }
     }
-    
+
     /// <summary>
     /// Gets an awaiter for the inspect operation.
     /// </summary>
@@ -154,5 +209,35 @@ internal class TestInspect : ITestInspect
     public ITestInspectAwaiter GetAwaiter()
     {
         return new TestInspectAwaiter(this);
+    }
+
+    private void AddSequential(InspectAsyncFn inspectFn)
+    {
+        _groups.Add(new StepGroup(false, new[] { inspectFn }));
+    }
+
+    private static InspectAsyncFn Wrap(InspectFn inspectFn)
+    {
+        return host =>
+        {
+            inspectFn(host);
+            return Task.CompletedTask;
+        };
+    }
+
+    /// <summary>
+    /// An ordered inspect step: one or more functions that run either sequentially or, when <see cref="Parallel"/> is set, concurrently.
+    /// </summary>
+    private sealed class StepGroup
+    {
+        public StepGroup(bool parallel, IReadOnlyList<InspectAsyncFn> fns)
+        {
+            Parallel = parallel;
+            Fns = fns;
+        }
+
+        public bool Parallel { get; }
+
+        public IReadOnlyList<InspectAsyncFn> Fns { get; }
     }
 }

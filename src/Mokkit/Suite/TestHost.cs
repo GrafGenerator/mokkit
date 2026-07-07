@@ -33,6 +33,29 @@ public class TestHost : ITestHost
     }
 
     /// <summary>
+    /// Establishes this host's bag on the current async context and enters the container scopes.
+    /// This is invoked once before a parallel inspect group so concurrent steps share a stable, already-entered scope.
+    /// </summary>
+    internal void PrepareForInspect()
+    {
+        EnterScope();
+    }
+
+    /// <summary>
+    /// Publishes this host's bag to the shared accessor (only when it is not already the current bag, so parallel
+    /// steps do not clobber each other's async-local view) and enters the aggregated container scopes.
+    /// </summary>
+    private void EnterScope()
+    {
+        if (!ReferenceEquals(_bagAccessor.Bag, _bag))
+        {
+            _bagAccessor.Bag = _bag;
+        }
+
+        _scope.OnAsyncScopeEnter();
+    }
+
+    /// <summary>
     /// Executes an action with a single resolved service of type <typeparamref name="TService"/>.
     /// </summary>
     /// <typeparam name="TService">The type of service to resolve and pass to the action.</typeparam>
@@ -40,8 +63,7 @@ public class TestHost : ITestHost
     public void Execute<TService>(Action<TService> actionFn)
         where TService : class
     {
-        _bagAccessor.Bag = _bag;
-        _scope.OnAsyncScopeEnter();
+        EnterScope();
 
         actionFn(_scope.Resolve<TService>());
     }
@@ -56,8 +78,7 @@ public class TestHost : ITestHost
         where TService : class
         where TService2 : class
     {
-        _bagAccessor.Bag = _bag;
-        _scope.OnAsyncScopeEnter();
+        EnterScope();
 
         actionFn(_scope.Resolve<TService>(), _scope.Resolve<TService2>());
     }
@@ -74,8 +95,7 @@ public class TestHost : ITestHost
         where TService2 : class
         where TService3 : class
     {
-        _bagAccessor.Bag = _bag;
-        _scope.OnAsyncScopeEnter();
+        EnterScope();
 
         actionFn(_scope.Resolve<TService>(), _scope.Resolve<TService2>(), _scope.Resolve<TService3>());
     }
@@ -95,8 +115,7 @@ public class TestHost : ITestHost
         where TService3 : class
         where TService4 : class
     {
-        _bagAccessor.Bag = _bag;
-        _scope.OnAsyncScopeEnter();
+        EnterScope();
 
         actionFn(_scope.Resolve<TService>(), _scope.Resolve<TService2>(), _scope.Resolve<TService3>(),
             _scope.Resolve<TService4>());
@@ -112,8 +131,7 @@ public class TestHost : ITestHost
     public TOutput Execute<TService, TOutput>(Func<TService, TOutput> actionFn)
         where TService : class
     {
-        _bagAccessor.Bag = _bag;
-        _scope.OnAsyncScopeEnter();
+        EnterScope();
 
         return actionFn(_scope.Resolve<TService>());
     }
@@ -130,8 +148,7 @@ public class TestHost : ITestHost
         where TService : class
         where TService2 : class
     {
-        _bagAccessor.Bag = _bag;
-        _scope.OnAsyncScopeEnter();
+        EnterScope();
 
         return actionFn(_scope.Resolve<TService>(), _scope.Resolve<TService2>());
     }
@@ -151,8 +168,7 @@ public class TestHost : ITestHost
         where TService2 : class
         where TService3 : class
     {
-        _bagAccessor.Bag = _bag;
-        _scope.OnAsyncScopeEnter();
+        EnterScope();
 
         return actionFn(_scope.Resolve<TService>(), _scope.Resolve<TService2>(), _scope.Resolve<TService3>());
     }
@@ -174,8 +190,7 @@ public class TestHost : ITestHost
         where TService3 : class
         where TService4 : class
     {
-        _bagAccessor.Bag = _bag;
-        _scope.OnAsyncScopeEnter();
+        EnterScope();
 
         return actionFn(_scope.Resolve<TService>(), _scope.Resolve<TService2>(), _scope.Resolve<TService3>(),
             _scope.Resolve<TService4>());
@@ -189,8 +204,7 @@ public class TestHost : ITestHost
     public async Task ExecuteAsync<TService>(Func<TService, Task> actionFn)
         where TService : class
     {
-        _bagAccessor.Bag = _bag;
-        _scope.OnAsyncScopeEnter();
+        EnterScope();
 
         await actionFn(_scope.Resolve<TService>());
     }
@@ -205,8 +219,7 @@ public class TestHost : ITestHost
         where TService : class
         where TService2 : class
     {
-        _bagAccessor.Bag = _bag;
-        _scope.OnAsyncScopeEnter();
+        EnterScope();
 
         await actionFn(_scope.Resolve<TService>(), _scope.Resolve<TService2>());
     }
@@ -223,8 +236,7 @@ public class TestHost : ITestHost
         where TService2 : class
         where TService3 : class
     {
-        _bagAccessor.Bag = _bag;
-        _scope.OnAsyncScopeEnter();
+        EnterScope();
 
         await actionFn(_scope.Resolve<TService>(), _scope.Resolve<TService2>(), _scope.Resolve<TService3>());
     }
@@ -244,8 +256,7 @@ public class TestHost : ITestHost
         where TService3 : class
         where TService4 : class
     {
-        _bagAccessor.Bag = _bag;
-        _scope.OnAsyncScopeEnter();
+        EnterScope();
 
         await actionFn(_scope.Resolve<TService>(), _scope.Resolve<TService2>(), _scope.Resolve<TService3>(),
             _scope.Resolve<TService4>());
@@ -261,8 +272,7 @@ public class TestHost : ITestHost
     public async Task<TOutput> ExecuteAsync<TService, TOutput>(Func<TService, Task<TOutput>> actionFn)
         where TService : class
     {
-        _bagAccessor.Bag = _bag;
-        _scope.OnAsyncScopeEnter();
+        EnterScope();
 
         return await actionFn(_scope.Resolve<TService>());
     }
@@ -280,8 +290,7 @@ public class TestHost : ITestHost
         where TService : class
         where TService2 : class
     {
-        _bagAccessor.Bag = _bag;
-        _scope.OnAsyncScopeEnter();
+        EnterScope();
 
         return await actionFn(_scope.Resolve<TService>(), _scope.Resolve<TService2>());
     }
@@ -301,8 +310,7 @@ public class TestHost : ITestHost
         where TService2 : class
         where TService3 : class
     {
-        _bagAccessor.Bag = _bag;
-        _scope.OnAsyncScopeEnter();
+        EnterScope();
 
         return await actionFn(_scope.Resolve<TService>(), _scope.Resolve<TService2>(), _scope.Resolve<TService3>());
     }
@@ -324,8 +332,7 @@ public class TestHost : ITestHost
         where TService3 : class
         where TService4 : class
     {
-        _bagAccessor.Bag = _bag;
-        _scope.OnAsyncScopeEnter();
+        EnterScope();
 
         return await actionFn(_scope.Resolve<TService>(), _scope.Resolve<TService2>(), _scope.Resolve<TService3>(),
             _scope.Resolve<TService4>());

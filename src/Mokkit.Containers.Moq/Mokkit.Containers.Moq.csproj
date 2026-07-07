@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Mokkit\Mokkit.csproj" />
+    <ProjectReference Include="..\Mokkit.Containers.Common\Mokkit.Containers.Common.csproj" />
   </ItemGroup>
 
 </Project>
