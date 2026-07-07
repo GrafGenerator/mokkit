@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -95,10 +96,13 @@ public sealed class CaptureArrangeGenerator : IIncrementalGenerator
             return null;
         }
 
-        var ctorArgs = string.Join(", ", method.Parameters
+        var forwarded = method.Parameters
             .Where(p => !SymbolEqualityComparer.Default.Equals(p, arrangeParam)
                         && !SymbolEqualityComparer.Default.Equals(p, captureParam))
-            .Select(p => p.Name));
+            .ToList();
+
+        var innerTypeFullName = innerType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+        var construction = BuildConstruction(innerType, innerTypeFullName, forwarded);
 
         var usings = new StringBuilder();
         foreach (var directive in syntax.SyntaxTree.GetCompilationUnitRoot().Usings)
@@ -134,9 +138,41 @@ public sealed class CaptureArrangeGenerator : IIncrementalGenerator
             arrangeParam.Name,
             captureParam.Name,
             variant,
-            innerType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-            ctorArgs);
+            construction);
     }
+
+    // Chooses how to construct the captured value: a positional constructor when the type has an explicit ctor whose
+    // arity matches (positional records, classes with ctors), otherwise an object initializer mapping each parameter
+    // to a settable/init property by name (init-property records and mutable classes).
+    private static string BuildConstruction(ITypeSymbol type, string fullName, List<IParameterSymbol> args)
+    {
+        if (args.Count > 0 && type is INamedTypeSymbol named)
+        {
+            var hasMatchingCtor = named.InstanceConstructors.Any(c =>
+                !c.IsImplicitlyDeclared && c.Parameters.Length == args.Count);
+
+            if (!hasMatchingCtor)
+            {
+                var assignments = args.Select(p =>
+                {
+                    var property = named.GetMembers()
+                        .OfType<IPropertySymbol>()
+                        .FirstOrDefault(pr => pr.SetMethod is not null
+                                              && string.Equals(pr.Name, p.Name, System.StringComparison.OrdinalIgnoreCase));
+
+                    var propertyName = property?.Name ?? Capitalize(p.Name);
+                    return $"{propertyName} = {p.Name}";
+                });
+
+                return $"new {fullName} {{ {string.Join(", ", assignments)} }}";
+            }
+        }
+
+        return $"new {fullName}({string.Join(", ", args.Select(p => p.Name))})";
+    }
+
+    private static string Capitalize(string name)
+        => name.Length == 0 ? name : char.ToUpperInvariant(name[0]) + name.Substring(1);
 
     private static void Emit(SourceProductionContext context, CaptureMethod method)
     {
@@ -160,7 +196,7 @@ public sealed class CaptureArrangeGenerator : IIncrementalGenerator
         builder.AppendLine($"{indent}    {method.Modifiers} {method.ReturnType} {method.MethodName}{method.ParameterList}");
         builder.AppendLine($"{indent}    {{");
         builder.AppendLine($"{indent}        var __initializer = global::Mokkit.{method.Variant}.Start(out {method.CaptureParamName});");
-        builder.AppendLine($"{indent}        return {method.ArrangeParamName}.Then(__host => __initializer.Set(new {method.InnerTypeFullName}({method.CtorArgs})));");
+        builder.AppendLine($"{indent}        return {method.ArrangeParamName}.Then(__host => __initializer.Set({method.Construction}));");
         builder.AppendLine($"{indent}    }}");
         builder.AppendLine($"{indent}}}");
 
@@ -201,5 +237,4 @@ internal sealed record CaptureMethod(
     string ArrangeParamName,
     string CaptureParamName,
     string Variant,
-    string InnerTypeFullName,
-    string CtorArgs);
+    string Construction);
