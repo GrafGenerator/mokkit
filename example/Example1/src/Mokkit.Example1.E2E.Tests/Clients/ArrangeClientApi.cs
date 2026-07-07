@@ -1,8 +1,8 @@
 using System.Net;
+using Mokkit;
 using Mokkit.Arrange;
 using Mokkit.Example1.Domain.Entities;
 using Mokkit.Example1.E2E.Tests.Contracts;
-using Capture = Mokkit.Capture;
 
 namespace Mokkit.Example1.E2E.Tests.Clients;
 
@@ -20,9 +20,9 @@ public static class ArrangeClientApi
     /// the precondition couldn't be established — not the assertion under test.
     /// </summary>
     public static ITestArrange NewClient(
-        this ITestArrange arrange, out Capture<Guid> idCapture, params ClientFieldFn[] fields)
+        this ITestArrange arrange, out Trapture<Guid> idCapture, params ClientFieldFn[] fields)
     {
-        var capture = Capture.Start(out idCapture);
+        var capture = Trapture.Start(out idCapture);
         return arrange.Then(async host =>
         {
             await host.ExecuteAsync<HttpClient>(async http =>

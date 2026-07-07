@@ -4,16 +4,13 @@ using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Images;
 using DotNet.Testcontainers.Networks;
-using Microsoft.Extensions.DependencyInjection;
-using Mokkit.Containers;
-using Mokkit.Containers.Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using Mokkit.Containers.Bag;
 using Mokkit.Example1.Db.Postgres;
-using Mokkit.Example1.Db.Postgres.Options;
 using Mokkit.Suite;
 using Npgsql;
 using Respawn;
 using Respawn.Graph;
-using StackExchange.Redis;
 using Testcontainers.Kafka;
 using Testcontainers.PostgreSql;
 using Testcontainers.Redis;
@@ -108,28 +105,28 @@ public sealed class E2EStack : IAsyncLifetime
 
         _pgConnectionString = _postgres.GetConnectionString();
         var apiBaseAddress = new UriBuilder("http", _api.Hostname, _api.GetMappedPublicPort(8080)).Uri;
-        var redisConnection = _redis.GetConnectionString();
 
-        var external = new ServiceProviderContainerBuilder().UseInit(services =>
+        // The lightweight Bag container just holds the pre-built external clients this suite resolves — no
+        // Microsoft.Extensions.DependencyInjection dependency, no auto-wiring, no options indirection.
+        var external = new BagContainerBuilder().UseInit(bag =>
         {
-            services.AddSingleton(new HttpClient { BaseAddress = apiBaseAddress });
-            services.AddSingleton<IProducer<string, string>>(_ =>
+            bag.AddInstance(new HttpClient { BaseAddress = apiBaseAddress });
+            bag.AddInstance<IProducer<string, string>>(
                 new ProducerBuilder<string, string>(new ProducerConfig
                 {
                     BootstrapServers = kafkaBootstrap,
                     MessageTimeoutMs = 10000 // fail fast instead of librdkafka's 5-minute default
                 }).Build());
-            services.AddSingleton(new KafkaProbe(kafkaBootstrap));
-            services.AddSingleton<IConnectionMultiplexer>(_ =>
-                ConnectionMultiplexer.Connect($"{redisConnection},abortConnect=false"));
+            bag.AddInstance(new KafkaProbe(kafkaBootstrap));
 
-            services.Configure<DatabaseOptions>(options => options.Primary = _pgConnectionString);
-            services.AddPostgresDbContext();
+            // Created fresh per stage and disposed when the stage ends (matching the previous scoped DbContext lifetime).
+            bag.AddFactory(() => new ExampleContext(
+                new DbContextOptionsBuilder<ExampleContext>().UseNpgsql(_pgConnectionString).Options));
 
             return Task.CompletedTask;
         });
 
-        _setup = await TestStageSetup.Create(new IDependencyContainerBuilder[] { external });
+        _setup = await TestStageSetup.Create(external);
 
         await using var connection = new NpgsqlConnection(_pgConnectionString);
         await connection.OpenAsync();

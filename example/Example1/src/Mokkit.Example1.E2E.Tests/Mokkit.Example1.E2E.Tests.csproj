@@ -14,8 +14,6 @@
     <PackageReference Include="Confluent.Kafka" />
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="Mokkit" />
-    <PackageReference Include="Mokkit.Containers.Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Respawn" />
     <PackageReference Include="Shouldly" />
     <PackageReference Include="StackExchange.Redis" />
@@ -30,6 +28,15 @@
   <ItemGroup>
     <ProjectReference Include="..\Mokkit.Example1.Db.Postgres\Mokkit.Example1.Db.Postgres.csproj" />
     <ProjectReference Include="..\Mokkit.Example1.Domain\Mokkit.Example1.Domain.csproj" />
+  </ItemGroup>
+
+  <!-- Local Mokkit projects (instead of the published NuGet packages) so this example exercises the new
+       Bag container, Ensure helpers, Trapture and the [MokkitCapture] source generator. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\Mokkit\Mokkit.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Mokkit.Containers.Bag\Mokkit.Containers.Bag.csproj" />
+    <ProjectReference Include="..\..\..\..\src\Mokkit.SourceGenerators\Mokkit.SourceGenerators.csproj"
+                      OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
