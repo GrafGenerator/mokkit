@@ -17,4 +17,8 @@
     <PackageTags>mokkit,mock,mocks,tests,test,arrange,act,assert,organize,container</PackageTags>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Mokkit\Mokkit.csproj" />
+  </ItemGroup>
+
 </Project>
