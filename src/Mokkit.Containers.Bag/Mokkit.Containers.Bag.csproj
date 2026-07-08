@@ -2,19 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-
-    <Version>0.3.0</Version>
     <Title>Mokkit.Containers.Bag</Title>
-    <Authors>Nikita Ivanov a.k.a GrafGenerator </Authors>
     <Description>Lightweight "bag" container for Mokkit — stores objects by type and resolves them with no external DI dependency and no auto-wiring. Ideal for e2e tests that only need to hold a few pre-built instances.</Description>
-    <Copyright>Nikita Ivanov</Copyright>
-    <PackageProjectUrl>https://github.com/GrafGenerator/mokkit</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/GrafGenerator/mokkit/blob/master/LICENSE</PackageLicenseUrl>
-    <RepositoryUrl>https://github.com/GrafGenerator/mokkit</RepositoryUrl>
-    <RepositoryType>github</RepositoryType>
-    <PackageTags>mokkit,mock,mocks,tests,test,arrange,act,assert,organize,container,bag</PackageTags>
+    <PackageTags>$(PackageTags);container;bag</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

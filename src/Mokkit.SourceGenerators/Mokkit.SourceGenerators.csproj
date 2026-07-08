@@ -2,18 +2,16 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
 
     <IsRoslynComponent>true</IsRoslynComponent>
     <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     <IncludeBuildOutput>false</IncludeBuildOutput>
 
-    <Version>0.3.0</Version>
+    <!-- Bundled into the Mokkit package under analyzers/dotnet/cs; never published on its own. -->
+    <IsPackable>false</IsPackable>
+
     <Title>Mokkit.SourceGenerators</Title>
-    <Authors>Nikita Ivanov a.k.a GrafGenerator </Authors>
     <Description>Roslyn source generator for Mokkit — generates arrange-capture boilerplate from [MokkitCapture].</Description>
-    <Copyright>Nikita Ivanov</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
