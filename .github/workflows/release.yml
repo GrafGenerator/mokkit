@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  release:
+    types: [ published ]   # the release tag (e.g. v0.3.0) is the MinVer version
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write        # push to GitHub Packages (uses GITHUB_TOKEN)
+      id-token: write        # request the OIDC token for NuGet.org trusted publishing
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Pack
+        run: dotnet pack Mokkit.sln -c Release -o ${{ github.workspace }}/artifacts
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: artifacts/*
+
+      # Trusted publishing: exchange the GitHub OIDC token for a short-lived (1h) NuGet.org API key.
+      # No stored NuGet secret — configure a policy at nuget.org > your name > Trusted Publishing
+      # (Owner: GrafGenerator, Repository: mokkit, Workflow File: release.yml). NUGET_USER is your
+      # nuget.org profile name (not email).
+      - name: NuGet login (OIDC → temporary API key)
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Push to NuGet.org        # nupkg + sibling snupkg symbol package
+        run: >
+          dotnet nuget push "artifacts/*.nupkg"
+          --api-key "${{ steps.nuget-login.outputs.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+
+      - name: Push to GitHub Packages  # nupkg only (GitHub Packages ignores snupkg)
+        run: >
+          dotnet nuget push "artifacts/*.nupkg"
+          --api-key "${{ secrets.GITHUB_TOKEN }}"
+          --source https://nuget.pkg.github.com/GrafGenerator/index.json
+          --skip-duplicate
