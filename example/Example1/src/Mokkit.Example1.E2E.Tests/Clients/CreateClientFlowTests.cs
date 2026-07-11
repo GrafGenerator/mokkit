@@ -1,4 +1,5 @@
 using Mokkit.Example1.Domain.Entities;
+using Mokkit.Inspect;
 using static Mokkit.Example1.E2E.Tests.Clients.ArrangeClientApi;
 
 namespace Mokkit.Example1.E2E.Tests.Clients;
@@ -16,17 +17,20 @@ public sealed class CreateClientFlowTests : BaseE2ETest
         // ACT — creating the client is the action under test; it yields the write-result artifact
         var result = await Act(WithName("Acme Corporation"), WithEmail("acme@e2e.test"));
 
-        // INSPECT — assert the result, then observe downstream effects by its id
+        // INSPECT — assert the result, capture its id once (guarded non-empty), then observe the three
+        // independent downstream effects concurrently: the API read, the DB row and the published event.
         await Inspect
             .WriteResult(result).Created()
-            .ApiClient(result.ClientId!.Value, c =>
-            {
-                c.Name.ShouldBe("Acme Corporation");
-                c.Email.ShouldBe("acme@e2e.test");
-                c.Status.ShouldBe((int)ClientStatus.Active);
-            })
-            .DbClient(result.ClientId!.Value, c => c.ShouldNotBeNull())
-            .EventPublished("clients.created", result.ClientId!.Value);
+            .Ensure(result, r => r.ClientId, out var clientId)
+            .ThenAll(
+                b => b.ApiClient(clientId, c =>
+                {
+                    c.Name.ShouldBe("Acme Corporation");
+                    c.Email.ShouldBe("acme@e2e.test");
+                    c.Status.ShouldBe((int)ClientStatus.Active);
+                }),
+                b => b.DbClient(clientId, c => c.ShouldNotBeNull()),
+                b => b.EventPublished("clients.created", clientId));
     }
 
     [Fact]

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
@@ -14,8 +14,6 @@
     <PackageReference Include="Confluent.Kafka" />
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="Mokkit" />
-    <PackageReference Include="Mokkit.Containers.Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Respawn" />
     <PackageReference Include="Shouldly" />
     <PackageReference Include="StackExchange.Redis" />
@@ -25,6 +23,10 @@
     <PackageReference Include="Testcontainers.Redis" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
+    <!-- Published Mokkit packages. The Mokkit package bundles the [MokkitCapture] source generator
+         (analyzers/dotnet/cs), so no separate generator reference is needed. -->
+    <PackageReference Include="Mokkit" />
+    <PackageReference Include="Mokkit.Containers.Bag" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,3 +1,4 @@
+using Mokkit;
 using Mokkit.Arrange;
 using Mokkit.Example1.Application.Features.Client.SaveClient;
 using Mokkit.Example1.Common;
@@ -10,7 +11,7 @@ namespace Mokkit.Example1.Unit.Tests.Messaging.Processor;
 /// Arrange building blocks for the status-changed processor — build (and capture) the incoming message and
 /// configure the substituted save handler the processor resolves from its DI scope.
 /// </summary>
-internal static class ArrangeProcessor
+internal static partial class ArrangeProcessor
 {
     public static ITestArrange IncomingStatusChange(
         this ITestArrange arrange,
@@ -21,21 +22,14 @@ internal static class ArrangeProcessor
         return arrange.Then(_ => capture.Set(KafkaMessageFaker.NewStatusChanged(status: status)));
     }
 
-    public static ITestArrange IncomingStatusChangeMissingContact(
+    // Body supplied by the [MokkitCapture] source generator: it object-initializes the message from the
+    // parameters (ClientId, Status) and leaves the unmentioned contact fields (Name/Email/Phone) null.
+    [MokkitCapture]
+    public static partial ITestArrange IncomingStatusChangeMissingContact(
         this ITestArrange arrange,
         out Capture<ClientStatusChangedMessage> messageCapture,
-        int status)
-    {
-        var capture = Capture.Start(out messageCapture);
-        return arrange.Then(_ => capture.Set(new ClientStatusChangedMessage
-        {
-            ClientId = Guid.NewGuid(),
-            Name = null,
-            Email = null,
-            Phone = null,
-            Status = status
-        }));
-    }
+        Guid clientId,
+        int status);
 
     public static ITestArrange HandlerSucceedsFor(
         this ITestArrange arrange,

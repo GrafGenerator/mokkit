@@ -1,4 +1,5 @@
 using FluentValidation;
+using Mokkit.Inspect;
 using Mokkit.Example1.Application.Features.Client.SaveClient;
 using Mokkit.Example1.Common;
 using Mokkit.Example1.Domain.Entities;
@@ -21,13 +22,14 @@ public sealed class SaveClientCommandHandlerTests : BaseIntegrationTest
         // ACT
         var result = await Act(command);
 
-        // INSPECT — result, real DB state (snapshot), cache refresh and published event.
+        // INSPECT — assert success, capture the id from the result (guarded non-empty), then observe by it.
         await Inspect
             .SaveResult(result).IsSuccess(ArrangeClient.FixedClientId)
-            .DbClientById(ArrangeClient.FixedClientId, out var saved, c => Assert.That(c, Is.Not.Null))
+            .Ensure(result, r => r.ClientId, out var clientId)
+            .DbClientById(clientId, out var saved, c => Assert.That(c, Is.Not.Null))
             .Verify(saved)
-            .CacheUpdated(ArrangeClient.FixedClientId)
-            .EventPublished(ArrangeClient.FixedClientId, "created");
+            .CacheUpdated(clientId)
+            .EventPublished(clientId, "created");
     }
 
     [TestCase("not-an-email", TestName = "Create_WhenEmailMalformed_FailsValidation")]

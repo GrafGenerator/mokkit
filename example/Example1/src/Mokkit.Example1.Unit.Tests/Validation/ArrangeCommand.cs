@@ -1,7 +1,7 @@
+using Mokkit;
 using Mokkit.Arrange;
 using Mokkit.Example1.Application.Features.Client.SaveClient;
 using Mokkit.Example1.Domain.Entities;
-using Capture = Mokkit.Capture;
 
 namespace Mokkit.Example1.Unit.Tests.Validation;
 
@@ -16,25 +16,25 @@ public static class ArrangeCommand
 {
     public static ITestArrange SaveCommand(
         this ITestArrange arrange,
-        out Capture<SaveClientCommand> commandCapture,
+        out Trapture<SaveClientCommand> commandCapture,
         params ClientMutateFn[] mutators) =>
         arrange.Build(out commandCapture, SaveOperationKind.Create, clientId: null, mutators);
 
     public static ITestArrange UpdateCommand(
         this ITestArrange arrange,
-        out Capture<SaveClientCommand> commandCapture,
+        out Trapture<SaveClientCommand> commandCapture,
         Guid? clientId,
         params ClientMutateFn[] mutators) =>
         arrange.Build(out commandCapture, SaveOperationKind.Update, clientId, mutators);
 
     private static ITestArrange Build(
         this ITestArrange arrange,
-        out Capture<SaveClientCommand> commandCapture,
+        out Trapture<SaveClientCommand> commandCapture,
         SaveOperationKind operation,
         Guid? clientId,
         ClientMutateFn[] mutators)
     {
-        var capture = Capture.Start(out commandCapture);
+        var capture = Trapture.Start(out commandCapture);
         return arrange.Then(_ =>
         {
             var data = new SaveClientData

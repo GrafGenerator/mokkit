@@ -20,13 +20,17 @@ public sealed class StatusChangeFlowTests : BaseE2ETest
     [Fact]
     public async Task StatusChangedMessage_IsConsumed_AndReflectedEverywhere()
     {
-        // ARRANGE — a real client created through the public API
+        // ARRANGE — a real client created through the public API, then the status-changed message that will be
+        // fed to it. ArrangeStatusChanged's body is source-generated from [MokkitCapture] (see ArrangeMessages).
         await Arrange
             .NewClient(out var clientId, WithName(Name), WithEmail(Email), WithPhone(Phone), WithStatus(ClientStatus.Active));
 
-        // ACT — an upstream system emits a status-changed message onto Kafka (carrying the full record,
+        await Arrange
+            .ArrangeStatusChanged(out var message, clientId, Name, Email, Phone, (int)ClientStatus.Suspended);
+
+        // ACT — an upstream system emits the status-changed message onto Kafka (carrying the full record,
         // which the consumer validates before applying)
-        await Act(clientId, ClientStatus.Suspended);
+        await Act(clientId, message);
 
         // INSPECT — the service consumes it; the change shows up via the API (eventually — it's async),
         // is persisted, and a confirmation event is published
@@ -36,18 +40,9 @@ public sealed class StatusChangeFlowTests : BaseE2ETest
             .EventPublished("clients.updated", clientId);
     }
 
-    private Task Act(Guid clientId, ClientStatus status) =>
+    private Task Act(Guid clientId, StatusChangedMessage message) =>
         Stage.ExecuteAsync<IProducer<string, string>>(async producer =>
         {
-            var message = new StatusChangedMessage
-            {
-                ClientId = clientId,
-                Name = Name,
-                Email = Email,
-                Phone = Phone,
-                Status = (int)status
-            };
-
             await producer.ProduceAsync("clients.status-changed", new Message<string, string>
             {
                 Key = clientId.ToString(),

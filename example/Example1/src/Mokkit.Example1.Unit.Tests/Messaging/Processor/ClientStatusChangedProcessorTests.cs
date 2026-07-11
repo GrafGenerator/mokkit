@@ -65,7 +65,7 @@ public sealed class ClientStatusChangedProcessorTests : BaseUnitTest<ProcessorFi
     {
         // ARRANGE
         await Arrange
-            .IncomingStatusChangeMissingContact(out var message, (int)ClientStatus.Inactive)
+            .IncomingStatusChangeMissingContact(out var message, Guid.NewGuid(), (int)ClientStatus.Inactive)
             .HandlerSucceedsFor(message);
 
         // ACT
