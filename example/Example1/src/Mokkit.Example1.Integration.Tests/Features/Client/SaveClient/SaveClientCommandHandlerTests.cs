@@ -20,7 +20,7 @@ public sealed class SaveClientCommandHandlerTests : BaseIntegrationTest
             .CreateClientCommand(out var command, WithName("Acme Corporation"));
 
         // ACT
-        var result = await Act(command);
+        var result = await Act.SaveClient(command);
 
         // INSPECT — assert success, capture the id from the result (guarded non-empty), then observe by it.
         await Inspect
@@ -43,7 +43,7 @@ public sealed class SaveClientCommandHandlerTests : BaseIntegrationTest
             .CreateClientCommand(out var command, WithEmail(email));
 
         // ACT
-        var result = await Act(command);
+        var result = await Act.SaveClient(command);
 
         // INSPECT — failure surfaces a ValidationException and nothing is persisted/published.
         await Inspect
@@ -75,7 +75,7 @@ public sealed class SaveClientCommandHandlerTests : BaseIntegrationTest
                 WithStatus((int)ClientStatus.Suspended));
 
         // ACT
-        var result = await Act(command);
+        var result = await Act.SaveClient(command);
 
         // INSPECT — fields changed, CreatedAt preserved, UpdatedAt advanced, event published.
         await Inspect
@@ -100,15 +100,11 @@ public sealed class SaveClientCommandHandlerTests : BaseIntegrationTest
             .UpdateClientCommand(out var command, ArrangeClient.FixedClientId);
 
         // ACT
-        var result = await Act(command);
+        var result = await Act.SaveClient(command);
 
         // INSPECT
         await Inspect
             .SaveResult(result).IsFailure<InvalidOperationException>()
             .NoEventsPublished();
     }
-
-    private Task<SaveClientCommandResult> Act(SaveClientCommand command)
-        => Stage.ExecuteAsync<IRequestHandler<SaveClientCommand, SaveClientCommandResult>, SaveClientCommandResult>(
-            handler => handler.Handle(command).AsTask());
 }

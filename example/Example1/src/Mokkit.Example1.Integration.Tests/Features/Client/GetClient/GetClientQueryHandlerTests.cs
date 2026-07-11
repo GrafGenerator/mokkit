@@ -14,7 +14,7 @@ public sealed class GetClientQueryHandlerTests : BaseIntegrationTest
             .CachedClient(out var cached);
 
         // ACT
-        var result = await Act(new GetClientQuery { ClientId = cached.Value!.Id });
+        var result = await Act.GetClient(new GetClientQuery { ClientId = cached.Value!.Id });
 
         // INSPECT — served from cache, so the handler does not write the cache again.
         await Inspect
@@ -31,7 +31,7 @@ public sealed class GetClientQueryHandlerTests : BaseIntegrationTest
             .DbClient(out var seeded);
 
         // ACT
-        var result = await Act(new GetClientQuery { ClientId = seeded.Value!.Id });
+        var result = await Act.GetClient(new GetClientQuery { ClientId = seeded.Value!.Id });
 
         // INSPECT — served from the database and written back into the cache.
         await Inspect
@@ -47,15 +47,11 @@ public sealed class GetClientQueryHandlerTests : BaseIntegrationTest
             .EmptyCache();
 
         // ACT
-        var result = await Act(new GetClientQuery { ClientId = ArrangeClient.FixedClientId });
+        var result = await Act.GetClient(new GetClientQuery { ClientId = ArrangeClient.FixedClientId });
 
         // INSPECT
         await Inspect
             .GetResult(result).NotFound()
             .CacheNotUpdated();
     }
-
-    private Task<GetClientQueryResult> Act(GetClientQuery query)
-        => Stage.ExecuteAsync<IRequestHandler<GetClientQuery, GetClientQueryResult>, GetClientQueryResult>(
-            handler => handler.Handle(query).AsTask());
 }
