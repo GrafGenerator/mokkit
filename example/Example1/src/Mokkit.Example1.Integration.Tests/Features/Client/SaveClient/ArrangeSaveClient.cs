@@ -1,6 +1,6 @@
+using Mokkit;
 using Mokkit.Arrange;
 using Mokkit.Example1.Application.Features.Client.SaveClient;
-using Capture = Mokkit.Capture;
 
 namespace Mokkit.Example1.Integration.Tests.Features.Client.SaveClient;
 
@@ -18,7 +18,7 @@ public static class ArrangeSaveClient
     /// <summary>Builds a <see cref="SaveOperationKind.Create"/> command over the defaults.</summary>
     public static ITestArrange CreateClientCommand(
         this ITestArrange arrange,
-        out Capture<SaveClientCommand> commandCapture,
+        out Trapture<SaveClientCommand> commandCapture,
         params ClientMutateFn[] mutateFns)
     {
         return arrange.Command(out commandCapture, SaveOperationKind.Create, clientId: null, mutateFns);
@@ -27,7 +27,7 @@ public static class ArrangeSaveClient
     /// <summary>Builds a <see cref="SaveOperationKind.Update"/> command targeting an existing client.</summary>
     public static ITestArrange UpdateClientCommand(
         this ITestArrange arrange,
-        out Capture<SaveClientCommand> commandCapture,
+        out Trapture<SaveClientCommand> commandCapture,
         Guid clientId,
         params ClientMutateFn[] mutateFns)
     {
@@ -36,12 +36,12 @@ public static class ArrangeSaveClient
 
     private static ITestArrange Command(
         this ITestArrange arrange,
-        out Capture<SaveClientCommand> commandCapture,
+        out Trapture<SaveClientCommand> commandCapture,
         SaveOperationKind operation,
         Guid? clientId,
         ClientMutateFn[] mutateFns)
     {
-        var capture = Capture.Start(out commandCapture);
+        var capture = Trapture.Start(out commandCapture);
 
         return arrange.Then(_ =>
         {

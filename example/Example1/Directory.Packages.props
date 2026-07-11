@@ -44,9 +44,10 @@
     <PackageVersion Include="Testcontainers.Kafka" Version="4.6.0" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.6.0" />
     <PackageVersion Include="Testcontainers.Redis" Version="4.6.0" />
-    <PackageVersion Include="Mokkit" Version="0.2.3" />
-    <PackageVersion Include="Mokkit.Containers.Microsoft.Extensions.DependencyInjection" Version="0.2.2" />
-    <PackageVersion Include="Mokkit.Containers.Moq" Version="0.2.2" />
+    <PackageVersion Include="Mokkit" Version="0.3.0-preview.1" />
+    <PackageVersion Include="Mokkit.Containers.Bag" Version="0.3.0-preview.1" />
+    <PackageVersion Include="Mokkit.Containers.Microsoft.Extensions.DependencyInjection" Version="0.3.0-preview.1" />
+    <PackageVersion Include="Mokkit.Containers.Moq" Version="0.3.0-preview.1" />
     <PackageVersion Include="Moq" Version="4.20.72" />
     <PackageVersion Include="NUnit" Version="4.3.2" />
     <PackageVersion Include="NUnit.Analyzers" Version="4.6.0">
