@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Mokkit.Act;
 using Mokkit.Arrange;
 using Mokkit.Containers;
 using Mokkit.Containers.Common;
@@ -41,6 +42,7 @@ public abstract class BaseIntegrationTest
     protected TestStage Stage { get; private set; } = null!;
 
     protected ITestArrange Arrange => Stage.Arrange();
+    protected ITestAct Act => Stage.Act();
     protected ITestInspect Inspect => Stage.Inspect();
 
     [OneTimeSetUp]

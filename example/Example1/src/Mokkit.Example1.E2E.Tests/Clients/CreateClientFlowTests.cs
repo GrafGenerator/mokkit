@@ -15,7 +15,7 @@ public sealed class CreateClientFlowTests : BaseE2ETest
     public async Task Create_ViaApi_IsRetrievable_Persisted_AndAnnounced()
     {
         // ACT — creating the client is the action under test; it yields the write-result artifact
-        var result = await Act(WithName("Acme Corporation"), WithEmail("acme@e2e.test"));
+        var result = await Act.CreateClient(WithName("Acme Corporation"), WithEmail("acme@e2e.test"));
 
         // INSPECT — assert the result, capture its id once (guarded non-empty), then observe the three
         // independent downstream effects concurrently: the API read, the DB row and the published event.
@@ -37,7 +37,7 @@ public sealed class CreateClientFlowTests : BaseE2ETest
     public async Task Create_WithInvalidEmail_IsRejected()
     {
         // ACT
-        var result = await Act(WithEmail("not-an-email"));
+        var result = await Act.CreateClient(WithEmail("not-an-email"));
 
         // INSPECT
         await Inspect.WriteResult(result).Rejected();
@@ -46,7 +46,4 @@ public sealed class CreateClientFlowTests : BaseE2ETest
     [Fact]
     public async Task Get_UnknownClient_Returns404() =>
         await Inspect.ApiClientNotFound(Guid.NewGuid());
-
-    private Task<ClientWriteResult> Act(params ClientFieldFn[] fields) =>
-        Stage.ExecuteAsync<HttpClient, ClientWriteResult>(http => ClientApi.CreateAsync(http, Build(fields)));
 }

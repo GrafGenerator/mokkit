@@ -1,7 +1,4 @@
-using System.Text.Json;
-using Confluent.Kafka;
 using Mokkit.Example1.Domain.Entities;
-using Mokkit.Example1.E2E.Tests.Contracts;
 using static Mokkit.Example1.E2E.Tests.Clients.ArrangeClientApi;
 
 namespace Mokkit.Example1.E2E.Tests.Clients;
@@ -30,7 +27,7 @@ public sealed class StatusChangeFlowTests : BaseE2ETest
 
         // ACT — an upstream system emits the status-changed message onto Kafka (carrying the full record,
         // which the consumer validates before applying)
-        await Act(clientId, message);
+        await Act.ProduceStatusChanged(clientId, message);
 
         // INSPECT — the service consumes it; the change shows up via the API (eventually — it's async),
         // is persisted, and a confirmation event is published
@@ -39,15 +36,4 @@ public sealed class StatusChangeFlowTests : BaseE2ETest
             .DbClient(clientId, c => c!.Status.ShouldBe(ClientStatus.Suspended))
             .EventPublished("clients.updated", clientId);
     }
-
-    private Task Act(Guid clientId, StatusChangedMessage message) =>
-        Stage.ExecuteAsync<IProducer<string, string>>(async producer =>
-        {
-            await producer.ProduceAsync("clients.status-changed", new Message<string, string>
-            {
-                Key = clientId.ToString(),
-                Value = JsonSerializer.Serialize(message)
-            });
-            producer.Flush(TimeSpan.FromSeconds(5));
-        });
 }

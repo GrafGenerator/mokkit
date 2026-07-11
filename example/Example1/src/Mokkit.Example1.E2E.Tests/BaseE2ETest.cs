@@ -1,3 +1,4 @@
+using Mokkit.Act;
 using Mokkit.Arrange;
 using Mokkit.Inspect;
 using Mokkit.Suite;
@@ -18,6 +19,8 @@ public abstract class BaseE2ETest : IAsyncLifetime
     protected TestStage Stage { get; private set; } = null!;
 
     protected ITestArrange Arrange => Stage.Arrange();
+
+    protected ITestAct Act => Stage.Act();
 
     protected ITestInspect Inspect => Stage.Inspect();
 

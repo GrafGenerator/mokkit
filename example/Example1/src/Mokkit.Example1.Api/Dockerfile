@@ -29,12 +29,12 @@ RUN dotnet publish "Mokkit.Example1.Api.csproj" -c Release -o /app/publish /p:Us
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
 
-# Create non-root user
-RUN adduser --disabled-password --home /app --gecos '' appuser && chown -R appuser /app
-USER appuser
-
 # Copy published application
 COPY --from=publish /app/publish .
+
+# Run as the non-root user the .NET base image already provides ($APP_UID). The old `adduser` step was
+# dropped: the .NET 10 base image no longer ships `adduser`, and .NET 8+ images pre-create this user.
+USER $APP_UID
 
 # Listen on 8080 (readiness is probed over HTTP at GET /health by the orchestrator / E2E wait strategy).
 ENV ASPNETCORE_URLS=http://+:8080

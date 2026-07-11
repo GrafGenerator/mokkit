@@ -20,7 +20,7 @@ public sealed class UpdateClientFlowTests : BaseE2ETest
             .ApiClient(clientId, c => c.Name.ShouldBe("Acme Corporation"));
 
         // ACT — update it; the write yields the result artifact
-        var result = await Act(clientId, WithName("Renamed Corporation"), WithStatus(ClientStatus.Suspended));
+        var result = await Act.UpdateClient(clientId, WithName("Renamed Corporation"), WithStatus(ClientStatus.Suspended));
 
         // INSPECT — assert the result, then observe the reflected change
         await Inspect
@@ -32,7 +32,4 @@ public sealed class UpdateClientFlowTests : BaseE2ETest
             })
             .DbClient(clientId, c => c!.Status.ShouldBe(ClientStatus.Suspended));
     }
-
-    private Task<ClientWriteResult> Act(Guid clientId, params ClientFieldFn[] fields) =>
-        Stage.ExecuteAsync<HttpClient, ClientWriteResult>(http => ClientApi.UpdateAsync(http, clientId, Build(fields)));
 }
