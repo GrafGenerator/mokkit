@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Mokkit.Act;
 using Mokkit.Arrange;
 using Mokkit.Containers;
 using Mokkit.Inspect;
@@ -31,6 +32,17 @@ public class TestStage : TestHost
     public ITestArrange Arrange()
     {
         return Mokkit.Arrange.Arrange.Start(this);
+    }
+
+    /// <summary>
+    /// Starts a new act operation chain for performing the operation(s) under test.
+    /// This method provides the entry point for the Act phase of the AAA pattern. Like Arrange, an act may
+    /// produce artifacts (through captures or a returned result) that later Inspect steps observe.
+    /// </summary>
+    /// <returns>A new <see cref="ITestAct"/> instance for chaining act operations.</returns>
+    public ITestAct Act()
+    {
+        return Mokkit.Act.Act.Start(this);
     }
 
     /// <summary>
