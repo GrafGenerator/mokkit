@@ -58,10 +58,10 @@ dotnet add package Mokkit.Containers.NSubstitute --prerelease
 
 ## Documentation
 
-Full guides, concepts and API reference: **[mokkit.dev](https://mokkit.dev)**
+Full guides, concepts and API reference: **[mokkit.net](https://mokkit.net)**
 
-- [Introduction](https://mokkit.dev/introduction/) · [Why Mokkit? (vs BDD/DSL)](https://mokkit.dev/why-mokkit/) · [Quickstart](https://mokkit.dev/quickstart/)
-- [Building your test vocabulary](https://mokkit.dev/concepts/vocabulary/) — the idea Mokkit is built around
+- [Introduction](https://mokkit.net/introduction/) · [Why Mokkit? (vs BDD/DSL)](https://mokkit.net/why-mokkit/) · [Quickstart](https://mokkit.net/quickstart/)
+- [Building your test vocabulary](https://mokkit.net/concepts/vocabulary/) — the idea Mokkit is built around
 
 A worked, three-tier example (unit / integration / e2e) lives in [`example/Example1`](example/Example1).
 

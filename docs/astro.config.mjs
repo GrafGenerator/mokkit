@@ -2,10 +2,9 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 
-// NOTE: set `site` to the project's real custom domain before deploying — it drives
-// canonical URLs and the sitemap. Placeholder for now.
+// The project's custom domain — drives canonical URLs and the sitemap.
 export default defineConfig({
-  site: 'https://mokkit.dev',
+  site: 'https://mokkit.net',
   integrations: [
     starlight({
       title: 'Mokkit',
