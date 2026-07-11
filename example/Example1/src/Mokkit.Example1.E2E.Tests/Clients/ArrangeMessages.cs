@@ -12,7 +12,7 @@ namespace Mokkit.Example1.E2E.Tests.Clients;
 public static partial class ArrangeMessages
 {
     [MokkitCapture]
-    public static partial ITestArrange ArrangeStatusChanged(
+    public static partial ITestArrange StatusChanged(
         this ITestArrange arrange,
         out Trapture<StatusChangedMessage> message,
         Guid clientId,

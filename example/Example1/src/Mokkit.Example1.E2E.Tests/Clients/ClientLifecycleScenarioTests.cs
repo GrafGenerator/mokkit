@@ -51,7 +51,7 @@ public sealed class ClientLifecycleScenarioTests : BaseE2ETest
         // ── Suspended ── an upstream system emits a status-changed message carrying the (renamed) record. This
         // act is void — its effects surface eventually via the API, the DB row, and a confirmation event.
         await Arrange
-            .ArrangeStatusChanged(out var suspend, clientId, RenamedName, Email, Phone, (int)ClientStatus.Suspended);
+            .StatusChanged(out var suspend, clientId, RenamedName, Email, Phone, (int)ClientStatus.Suspended);
 
         await Act
             .ProduceStatusChanged(clientId, suspend);
