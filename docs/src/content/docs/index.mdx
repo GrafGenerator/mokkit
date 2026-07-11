@@ -1,0 +1,55 @@
+---
+title: Mokkit
+description: Write tests that read like a story in your domain's language — as plain, compilable C#.
+template: splash
+hero:
+  tagline: The readability of Cucumber/SpecFlow — without a DSL. Your tests read like a story in your domain's language, but they're ordinary, compilable C# with full IDE and compiler support.
+  actions:
+    - text: Get started
+      link: /introduction/
+      icon: right-arrow
+    - text: Why Mokkit?
+      link: /why-mokkit/
+      variant: minimal
+    - text: GitHub
+      link: https://github.com/GrafGenerator/mokkit
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+```csharp
+await Arrange
+    .NewClient(out var client, WithName("Acme Corporation"))
+    .CacheHasClient(client);
+
+var result = await Act(client);
+
+await Inspect
+    .WriteResult(result).Created()
+    .Ensure(result, r => r.ClientId, out var id)
+    .ThenAll(
+        b => b.ApiClientMatches(id, name: "Acme Corporation"),
+        b => b.DbClientExists(id),
+        b => b.EventPublished("clients.created", id));
+```
+
+<CardGrid stagger>
+  <Card title="Reads like prose" icon="open-book">
+    Tests are composed from **domain verbs** you name yourself — `NewClient`, `CacheHasClient`,
+    `EventPublished`. The AAA (Arrange / Act / Inspect) shape keeps every test telling the same story.
+  </Card>
+  <Card title="No DSL, no feature files" icon="seti:c-sharp">
+    It's just C#. No Gherkin, no step bindings, no generated glue. Refactor a verb and every test that
+    uses it updates — and still compiles.
+  </Card>
+  <Card title="Bring your own everything" icon="puzzle">
+    Framework-agnostic (xUnit / NUnit / MSTest), mock-agnostic (Moq / NSubstitute / FakeItEasy) and
+    container-agnostic (Microsoft DI / Autofac / Castle Windsor — or the dependency-free Bag).
+  </Card>
+  <Card title="From unit to end-to-end" icon="rocket">
+    The same Arrange / Act / Inspect vocabulary scales from a mocked unit test to a full
+    Testcontainers e2e run against real Postgres, Kafka and your API.
+  </Card>
+</CardGrid>

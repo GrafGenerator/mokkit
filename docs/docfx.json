@@ -1,0 +1,39 @@
+{
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": "../src",
+          "files": [
+            "Mokkit/Mokkit.csproj",
+            "Mokkit.Containers.Common/Mokkit.Containers.Common.csproj",
+            "Mokkit.Containers.Bag/Mokkit.Containers.Bag.csproj",
+            "Mokkit.Containers.Moq/Mokkit.Containers.Moq.csproj",
+            "Mokkit.Containers.NSubstitute/Mokkit.Containers.NSubstitute.csproj",
+            "Mokkit.Containers.FakeItEasy/Mokkit.Containers.FakeItEasy.csproj",
+            "Mokkit.Containers.Autofac/Mokkit.Containers.Autofac.csproj",
+            "Mokkit.Containers.CastleWindsor/Mokkit.Containers.CastleWindsor.csproj",
+            "Mokkit.Containers.Microsoft.Extensions.DependencyInjection/Mokkit.Containers.Microsoft.Extensions.DependencyInjection.csproj"
+          ]
+        }
+      ],
+      "dest": "_api",
+      "outputFormat": "apiPage"
+    }
+  ],
+  "build": {
+    "content": [
+      { "files": ["**/*.{yml,md}"], "src": "_api", "dest": "." },
+      { "files": ["index.md"], "src": "apidoc", "dest": "." }
+    ],
+    "output": "public/api",
+    "template": ["default", "modern"],
+    "globalMetadata": {
+      "_appName": "Mokkit",
+      "_appTitle": "Mokkit API reference",
+      "_appFooter": "Mokkit — <a href=\"/\">back to docs</a>",
+      "_disableContribution": true,
+      "pdf": false
+    }
+  }
+}

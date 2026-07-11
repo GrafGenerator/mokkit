@@ -1,0 +1,67 @@
+---
+title: Installation
+description: The Mokkit packages, how to pick them, and how to install.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+You install **three things**: the core, one **container adapter** for your DI container (or the trivial
+Bag), and — if your tests use mocks — one **mock adapter** for your mocking library.
+
+:::note[Prerelease]
+Mokkit is currently published as a prerelease (`0.3.0-preview.1`). Add `--prerelease` (CLI) or reference the
+exact version so NuGet will resolve it.
+:::
+
+## A minimal unit-test setup
+
+Core + Microsoft DI + NSubstitute is a common starting point:
+
+<Tabs>
+  <TabItem label="dotnet CLI">
+```bash
+dotnet add package Mokkit --prerelease
+dotnet add package Mokkit.Containers.Microsoft.Extensions.DependencyInjection --prerelease
+dotnet add package Mokkit.Containers.NSubstitute --prerelease
+```
+  </TabItem>
+  <TabItem label="PackageReference">
+```xml
+<ItemGroup>
+  <PackageReference Include="Mokkit" Version="0.3.0-preview.1" />
+  <PackageReference Include="Mokkit.Containers.Microsoft.Extensions.DependencyInjection" Version="0.3.0-preview.1" />
+  <PackageReference Include="Mokkit.Containers.NSubstitute" Version="0.3.0-preview.1" />
+</ItemGroup>
+```
+  </TabItem>
+</Tabs>
+
+The `[MokkitCapture]` source generator ships **inside the `Mokkit` package** (under `analyzers/dotnet/cs`),
+so referencing `Mokkit` is all you need to use it — nothing extra to install.
+
+## Package matrix
+
+| Package | You need it when… |
+| --- | --- |
+| **`Mokkit`** | Always. The core: Stage, Arrange/Act/Inspect, captures, the `[MokkitCapture]` generator. |
+| **`Mokkit.Containers.Microsoft.Extensions.DependencyInjection`** | Your system-under-test is wired with Microsoft DI. |
+| **`Mokkit.Containers.Autofac`** | …wired with Autofac. |
+| **`Mokkit.Containers.CastleWindsor`** | …wired with Castle Windsor. |
+| **`Mokkit.Containers.Bag`** | You just need to hold a few pre-built instances (e.g. e2e clients) — no DI, no auto-wiring. |
+| **`Mokkit.Containers.Moq`** | Your tests mock with Moq. |
+| **`Mokkit.Containers.NSubstitute`** | …mock with NSubstitute. |
+| **`Mokkit.Containers.FakeItEasy`** | …mock with FakeItEasy. |
+| `Mokkit.Containers.Common` | Shared base for the mock adapters — pulled in automatically; you don't reference it directly. |
+
+## How to choose
+
+- **Which container adapter?** Match your production wiring. If the SUT is resolved from Microsoft DI, use
+  the Microsoft DI adapter so the *real* graph is exercised and mocks are bridged into it. If your test only
+  needs to hand back a couple of pre-built objects (typical for black-box e2e), the **Bag** container is the
+  zero-dependency choice.
+- **Which mock adapter?** Match your mocking library — one per test project. (You can even mix a mock
+  container with a DI container; see [Containers & the mock→DI bridge](/concepts/containers/).)
+- **Multiple SUTs?** One test project can use several containers together; you compose them when you build
+  the Stage. See [The Stage & lifecycle](/concepts/stage/).
+
+Ready to write one? Head to the **[Quickstart](/quickstart/)**.
