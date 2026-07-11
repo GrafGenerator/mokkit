@@ -19,7 +19,8 @@ Here's a test written entirely in a client-management vocabulary:
 await Arrange
     .NewClient(out var clientId, WithName("Acme Corporation"), WithEmail("acme@e2e.test"));
 
-var result = await Act(clientId, WithName("Renamed Corporation"));
+var result = await Act
+    .UpdateClient(clientId, WithName("Renamed Corporation"));
 
 await Inspect
     .WriteResult(result).Updated()
@@ -27,11 +28,11 @@ await Inspect
     .EventPublished("clients.updated", clientId);
 ```
 
-`NewClient`, `WithName`, `WriteResult`, `Updated`, `ApiClient`, `EventPublished` aren't Mokkit APIs — they're
-**your** methods. Mokkit provides `Arrange` / `Act` / `Inspect` and the machinery underneath; you provide the
-words.
+`NewClient`, `WithName`, `UpdateClient`, `WriteResult`, `Updated`, `ApiClient`, `EventPublished` aren't Mokkit
+APIs — they're **your** methods. Mokkit provides `Arrange` / `Act` / `Inspect` and the machinery underneath;
+you provide the words.
 
-## Two kinds of verb
+## Three kinds of verb
 
 ### Arrange verbs — set up, and capture
 
@@ -65,6 +66,27 @@ Small parameter helpers (`WithName`, `WithEmail`, …) let a caller compose exac
 public static ClientFieldFn WithName(string name)  => r => r with { Name = name };
 public static ClientFieldFn WithEmail(string email) => r => r with { Email = email };
 ```
+
+### Act verbs — do the thing, and maybe return a result
+
+An act verb performs the operation under test. Like an arrange, it can hand an artifact back — either by
+**returning** it (`Returning`) or, for a void act, leaving its effects to be observed later in Inspect:
+
+```csharp
+// Return flavor — `var result = await Act.UpdateClient(...)`.
+public static ITestAct<ClientWriteResult> UpdateClient(
+    this ITestAct act, Guid clientId, params ClientFieldFn[] fields) =>
+    act.Returning(host => host.ExecuteAsync<HttpClient, ClientWriteResult>(
+        http => ClientApi.UpdateAsync(http, clientId, Build(fields))));
+
+// Void flavor — fire the operation; its effects surface downstream in Inspect.
+public static ITestAct ProduceStatusChanged(this ITestAct act, Guid clientId, StatusChangedMessage message) =>
+    act.Then(host => host.ExecuteAsync<IProducer<string, string>>(
+        producer => producer.ProduceAsync("clients.status-changed", Serialize(clientId, message))));
+```
+
+Act verbs are what let a test grow from a single triple into a [scenario](/concepts/scenarios/) — a sequence
+of Arrange / Act / Inspect blocks that walks a whole lifecycle.
 
 ### Inspect verbs — observe
 

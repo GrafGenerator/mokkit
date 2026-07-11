@@ -85,9 +85,9 @@ public async Task Registering_a_user_sends_a_welcome_email()
 {
     var stage = await NewStage();
 
-    // ACT — resolve the service from the stage and run the one thing under test.
-    var id = await stage.ExecuteAsync<SignupService, Guid>(
-        service => service.Register("acme@example.com"));
+    // ACT — the Act phase resolves the service, runs the one thing under test, and returns its result.
+    var id = await stage.Act().Returning(host =>
+        host.ExecuteAsync<SignupService, Guid>(service => service.Register("acme@example.com")));
 
     // INSPECT — observe the outcome through your vocabulary.
     await stage.Inspect()
@@ -97,12 +97,19 @@ public async Task Registering_a_user_sends_a_welcome_email()
 }
 ```
 
+:::note[Act is a phase too]
+`stage.Act()` starts the Act phase, symmetric with `Arrange` and `Inspect`. `.Returning(...)` is the flavor
+that hands a result back; there are also void and capture flavors. In a real project you'd wrap this in an
+**Act verb** — `await Act.RegisterUser("acme@example.com")` — exactly like the Inspect verb above. See
+[Arrange / Act / Inspect](/concepts/aai/#act).
+:::
+
 ## What just happened
 
 - `TestStageSetup.Create(...)` composed your containers; `EnterStage()` gave you a fresh **Stage** for the
   test.
-- `stage.ExecuteAsync<SignupService, Guid>(...)` **resolved** the service from the stage and ran it — the
-  **Act**.
+- `stage.Act().Returning(...)` started the **Act** phase, **resolved** the service from the stage, ran it, and
+  returned its result.
 - `stage.Inspect().WelcomeEmailSent(...)` ran your **Inspect** verb, which resolved the same `IEmailSender`
   from the stage and verified the call.
 

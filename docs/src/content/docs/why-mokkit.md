@@ -40,9 +40,10 @@ Mokkit keeps the readable, sentence-like scenario but drops the separate languag
 extension methods you author — your **domain vocabulary** — and a test simply composes them:
 
 ```csharp
-await Arrange.NewClient(out var client, WithName("Acme Corporation"));
-var result = await Act(client);
-await Inspect.WriteResult(result).Created().EventPublished("clients.created", result);
+var result = await Act.CreateClient(WithName("Acme Corporation"));
+await Inspect
+    .WriteResult(result).Created()
+    .EventPublished("clients.created", result.ClientId!.Value);
 ```
 
 Because a Mokkit test is ordinary code, the trade-offs invert:
@@ -60,17 +61,16 @@ Because a Mokkit test is ordinary code, the trade-offs invert:
 The headline: with Mokkit, **a test that doesn't make sense won't compile**, and the same `dotnet build`
 that checks your product code checks your tests' vocabulary.
 
-## When BDD is still the better fit
+## Who Mokkit is for
 
-Mokkit is not anti-BDD; it's a different trade-off. Reach for a Gherkin tool when:
+Mokkit makes one assumption: the people who write and read your tests are **engineers who live in an IDE**.
+Everything it offers — autocomplete, go-to-definition, refactoring, compile-time checking — is aimed squarely
+at them. If your tests are written and maintained by the same engineers who write the code, Mokkit gives you
+the readability with none of the DSL tax.
 
-- **Non-developers author or read the scenarios.** Business analysts editing `.feature` files is a workflow
-  Mokkit doesn't try to replace — Mokkit's audience is engineers who live in an IDE.
-- **The living documentation *is* the deliverable**, and plain-English feature files are a contractual
-  artifact.
-
-If your scenarios are written and maintained by the same engineers who write the code, Mokkit gives you the
-readability with none of the DSL tax.
+The one workflow it deliberately doesn't target is a **plain-English scenario document as a contractual
+deliverable, authored or read by non-developers**. A Mokkit test reads like sentences, but it lives in your
+test project as code — not as a separate artifact a non-engineer edits.
 
 ## What Mokkit is *not*
 

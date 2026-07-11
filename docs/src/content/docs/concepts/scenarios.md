@@ -27,7 +27,7 @@ await Inspect
 
 // Suspended — an upstream message carries the change. This act is void; its effects surface downstream.
 await Arrange
-    .ArrangeStatusChanged(out var suspend, clientId, "Acme Holdings", Email, Phone, (int)ClientStatus.Suspended);
+    .StatusChanged(out var suspend, clientId, "Acme Holdings", Email, Phone, (int)ClientStatus.Suspended);
 
 await Act
     .ProduceStatusChanged(clientId, suspend);

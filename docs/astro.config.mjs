@@ -31,6 +31,9 @@ export default defineConfig({
             { label: 'Arrange / Act / Inspect', slug: 'concepts/aai' },
             { label: 'Building your test vocabulary', slug: 'concepts/vocabulary' },
             { label: 'Scenario tests', slug: 'concepts/scenarios' },
+            { label: 'The Stage & lifecycle', slug: 'concepts/stage' },
+            { label: 'Captures: Capture vs Trapture', slug: 'concepts/captures' },
+            { label: 'Containers & the mock→DI bridge', slug: 'concepts/containers' },
           ],
         },
         {
