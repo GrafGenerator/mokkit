@@ -17,18 +17,20 @@ public sealed class CreateClientFlowTests : BaseE2ETest
         // ACT — creating the client is the action under test; it yields the write-result artifact
         var result = await Act(WithName("Acme Corporation"), WithEmail("acme@e2e.test"));
 
-        // INSPECT — assert the result, capture its id once (guarded non-empty), then observe by that id
+        // INSPECT — assert the result, capture its id once (guarded non-empty), then observe the three
+        // independent downstream effects concurrently: the API read, the DB row and the published event.
         await Inspect
             .WriteResult(result).Created()
             .Ensure(result, r => r.ClientId, out var clientId)
-            .ApiClient(clientId, c =>
-            {
-                c.Name.ShouldBe("Acme Corporation");
-                c.Email.ShouldBe("acme@e2e.test");
-                c.Status.ShouldBe((int)ClientStatus.Active);
-            })
-            .DbClient(clientId, c => c.ShouldNotBeNull())
-            .EventPublished("clients.created", clientId);
+            .ThenAll(
+                b => b.ApiClient(clientId, c =>
+                {
+                    c.Name.ShouldBe("Acme Corporation");
+                    c.Email.ShouldBe("acme@e2e.test");
+                    c.Status.ShouldBe((int)ClientStatus.Active);
+                }),
+                b => b.DbClient(clientId, c => c.ShouldNotBeNull()),
+                b => b.EventPublished("clients.created", clientId));
     }
 
     [Fact]
