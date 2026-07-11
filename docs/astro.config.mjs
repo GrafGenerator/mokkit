@@ -30,6 +30,7 @@ export default defineConfig({
           items: [
             { label: 'Arrange / Act / Inspect', slug: 'concepts/aai' },
             { label: 'Building your test vocabulary', slug: 'concepts/vocabulary' },
+            { label: 'Scenario tests', slug: 'concepts/scenarios' },
           ],
         },
         {
