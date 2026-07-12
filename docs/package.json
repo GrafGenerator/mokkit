@@ -5,7 +5,9 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
+    "api": "docfx docfx.json",
     "build": "astro build",
+    "build:all": "npm run api && astro build",
     "preview": "astro preview"
   },
   "dependencies": {
