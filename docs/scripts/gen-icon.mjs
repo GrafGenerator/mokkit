@@ -29,3 +29,8 @@ for (const rel of ['assets/og.png', 'docs/public/og.png']) {
   await sharp(og, { density: 192 }).resize(1280, 640).png().toFile(join(root, rel));
   console.log(`wrote ${rel} (1280x640)`);
 }
+
+// Compact 4:1 README header banner (1200x300).
+const banner = readFileSync(join(root, 'assets', 'banner.svg'));
+await sharp(banner, { density: 192 }).resize(1200, 300).png().toFile(join(root, 'assets', 'banner.png'));
+console.log('wrote assets/banner.png (1200x300)');
