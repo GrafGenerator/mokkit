@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Title>Mokkit</Title>
-    <Description>Mokkit is a tool set to organize AAA (arrange, act, assert) flow in tests.</Description>
+    <Description>Write tests that read like a story in your domain's language — plain, compilable C# with the readability of BDD tools, but no DSL. Mokkit orchestrates an Arrange / Act / Inspect flow over your choice of test framework, mock library and DI container.</Description>
   </PropertyGroup>
 
   <!-- Bundle the source generator into this package (analyzers/dotnet/cs) and run it during this build. -->

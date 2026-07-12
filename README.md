@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://raw.githubusercontent.com/GrafGenerator/mokkit/main/assets/icon-256.png" alt="Mokkit" width="120" height="120">
+</p>
+
 # Mokkit
 
 [![NuGet](https://img.shields.io/nuget/vpre/Mokkit.svg)](https://www.nuget.org/packages/Mokkit)

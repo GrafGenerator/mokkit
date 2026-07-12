@@ -9,6 +9,7 @@ export default defineConfig({
     starlight({
       title: 'Mokkit',
       description: "Write tests that read like a story in your domain's language — as plain, compilable C#.",
+      logo: { src: './src/assets/logo.svg', alt: 'Mokkit' },
       favicon: '/favicon.svg',
       head: [
         // PNG fallbacks for browsers that don't use the SVG favicon, plus the Apple touch icon.
