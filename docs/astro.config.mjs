@@ -40,16 +40,38 @@ export default defineConfig({
           label: 'Guides',
           items: [
             { label: 'Unit-test a service with a mock', slug: 'guides/unit-mocked-dependency' },
+            { label: 'Pick a mock library', slug: 'guides/mock-libraries' },
             { label: 'Wire a real DI container', slug: 'guides/real-di-container' },
+            { label: 'The Bag container', slug: 'guides/bag-container' },
             { label: 'Integration-test a database', slug: 'guides/integration-database' },
             { label: 'Full black-box E2E', slug: 'guides/end-to-end' },
+            { label: 'Test a Kafka consumer / producer', slug: 'guides/kafka' },
             { label: 'Async / eventually-consistent assertions', slug: 'guides/eventually-consistent' },
-            // More guides land here batch by batch.
+            { label: 'Deterministic time & ids', slug: 'guides/deterministic-time-ids' },
+          ],
+        },
+        {
+          label: 'Techniques',
+          items: [
+            { label: 'Value & context scopes', slug: 'guides/inspect-scopes' },
+            { label: 'Parallel inspects with ThenAll', slug: 'guides/thenall' },
+            { label: 'Ensure: derive, guard, capture', slug: 'guides/ensure' },
+            { label: 'Snapshot assertions with Verify', slug: 'guides/verify-snapshots' },
+            { label: 'Source-generated arranges', slug: 'guides/mokkit-capture' },
+          ],
+        },
+        {
+          label: 'Extending',
+          items: [
+            { label: 'Advanced vocabulary techniques', slug: 'guides/advanced-vocabulary' },
+            { label: 'Write a custom container adapter', slug: 'guides/custom-container-adapter' },
           ],
         },
         {
           label: 'Reference',
           items: [
+            { label: 'How to structure a test project', slug: 'reference/project-structure' },
+            { label: 'Conventions cheat-sheet', slug: 'reference/conventions' },
             // DocFX-generated static site under /api (built separately in CI).
             { label: 'API reference', link: '/api/' },
           ],
