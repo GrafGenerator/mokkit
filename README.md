@@ -1,8 +1,6 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/GrafGenerator/mokkit/main/assets/icon-256.png" alt="Mokkit" width="120" height="120">
+  <img src="https://raw.githubusercontent.com/GrafGenerator/mokkit/main/assets/og.png" alt="Mokkit — write tests that read like a story, in plain C#" width="860">
 </p>
-
-# Mokkit
 
 [![NuGet](https://img.shields.io/nuget/vpre/Mokkit.svg)](https://www.nuget.org/packages/Mokkit)
 [![CI](https://github.com/GrafGenerator/mokkit/actions/workflows/ci.yml/badge.svg)](https://github.com/GrafGenerator/mokkit/actions/workflows/ci.yml)
