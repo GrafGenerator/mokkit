@@ -7,11 +7,13 @@
     <!-- Shared package metadata -->
     <Authors>Nikita Ivanov a.k.a GrafGenerator</Authors>
     <Copyright>Nikita Ivanov</Copyright>
-    <PackageProjectUrl>https://github.com/GrafGenerator/mokkit</PackageProjectUrl>
+    <!-- Project homepage on nuget.org points at the docs site; source stays on GitHub via RepositoryUrl. -->
+    <PackageProjectUrl>https://mokkit.net</PackageProjectUrl>
     <RepositoryUrl>https://github.com/GrafGenerator/mokkit</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageTags>mokkit;mock;mocks;tests;arrange;act;assert</PackageTags>
 
     <!-- Reproducible + debuggable packages -->
@@ -30,9 +32,10 @@
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="all" />
   </ItemGroup>
 
-  <!-- Ship the repo README inside every package (inert for non-packable projects). -->
+  <!-- Ship the repo README + brand icon inside every package (inert for non-packable projects). -->
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" PackagePath="\" Visible="false" />
+    <None Include="$(MSBuildThisFileDirectory)..\assets\icon.png" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
 </Project>
