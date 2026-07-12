@@ -19,8 +19,9 @@ integration suite — only the libraries around them changed.
 
 ## 1. Bring-your-own mock library: the custom NSubstitute container
 
-Mokkit ships only a Moq container. Swapping in NSubstitute is just implementing
-`IDependencyContainerBuilder` — see [Containers/](Containers/):
+Mokkit ships Moq, NSubstitute and FakeItEasy container adapters out of the box. This suite deliberately
+**rolls its own** NSubstitute container instead — to demonstrate that the adapter contract is tiny, so you
+can plug in *any* mocking (or DI) library by implementing `IDependencyContainerBuilder` — see [Containers/](Containers/):
 
 - `SubstituteContainerBuilder` — the builder (`UseInit` registers substitutes).
 - `SubstituteCollection` / `SubstituteRegistration` — `AddSubstitute<T>()` records `typeof(T)` and a
@@ -95,7 +96,9 @@ await Inspect
     .OffsetCommitted(message);                      // consumer.Commit(result) called
 ```
 
-**Two Act styles — the dependencies always come from the stage either way:**
+**Two Act styles — the dependencies always come from the stage either way.** (Act is a first-class Mokkit
+phase, used by the integration and E2E suites as `Act.Verb(...)` vocabulary; here every act is a trivial
+one-liner, so this suite keeps them as inline `Stage.Execute` helpers rather than a separate `Act` file.)
 - *Resolve the SUT from the stage* (Cache, Validator, Processor): the real SUT is registered in the
   fixture and `Act` resolves it, so Mokkit constructs it with the substitutes injected —
   `Stage.ExecuteAsync<IClientCacheService, Client?>(svc => svc.GetClientAsync(id))`.
