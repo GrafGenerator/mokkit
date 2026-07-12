@@ -37,13 +37,23 @@ export default defineConfig({
           ],
         },
         {
+          label: 'Guides',
+          items: [
+            { label: 'Unit-test a service with a mock', slug: 'guides/unit-mocked-dependency' },
+            { label: 'Wire a real DI container', slug: 'guides/real-di-container' },
+            { label: 'Integration-test a database', slug: 'guides/integration-database' },
+            { label: 'Full black-box E2E', slug: 'guides/end-to-end' },
+            { label: 'Async / eventually-consistent assertions', slug: 'guides/eventually-consistent' },
+            // More guides land here batch by batch.
+          ],
+        },
+        {
           label: 'Reference',
           items: [
             // DocFX-generated static site under /api (built separately in CI).
             { label: 'API reference', link: '/api/' },
           ],
         },
-        // Guides are added as those pages land.
       ],
     }),
   ],
