@@ -9,6 +9,12 @@ export default defineConfig({
     starlight({
       title: 'Mokkit',
       description: "Write tests that read like a story in your domain's language — as plain, compilable C#.",
+      favicon: '/favicon.svg',
+      head: [
+        // PNG fallbacks for browsers that don't use the SVG favicon, plus the Apple touch icon.
+        { tag: 'link', attrs: { rel: 'icon', href: '/favicon-32.png', type: 'image/png', sizes: '32x32' } },
+        { tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/favicon.png', sizes: '180x180' } },
+      ],
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/GrafGenerator/mokkit' },
       ],
