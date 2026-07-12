@@ -22,10 +22,10 @@ An xUnit collection fixture (built once per run) starts, on a shared Docker netw
   others (`Database__Primary`, `ConnectionStrings__Redis`, `Kafka__BootstrapServers`), with readiness
   gated on `GET /health`.
 
-It then builds the Mokkit stage via a `ServiceProviderContainerBuilder` registering **external clients**
-pointed at the running stack (`HttpClient`, `IProducer<string,string>`, `KafkaProbe`, `ExampleContext`,
-`IConnectionMultiplexer`). [`BaseE2ETest`](BaseE2ETest.cs) enters a fresh stage per test and
-Respawn-resets the database afterwards (ignoring `__EFMigrationsHistory`).
+It then builds the Mokkit stage via a dependency-free `BagContainerBuilder` that **holds external clients**
+pointed at the running stack (`HttpClient`, `IProducer<string,string>`, `KafkaProbe`, and a per-stage
+`ExampleContext` factory) — no DI framework needed, since nothing here is auto-wired. [`BaseE2ETest`](BaseE2ETest.cs)
+enters a fresh stage per test and Respawn-resets the database afterwards (ignoring `__EFMigrationsHistory`).
 
 ### Kafka dual-listener
 The broker advertises **two** listeners: an in-network one (`kafka:19092`, used by the API container) via
@@ -33,23 +33,29 @@ The broker advertises **two** listeners: an in-network one (`kafka:19092`, used 
 A single advertised address can't serve both vantage points — see the plan/notes for the full rationale.
 
 ## 2. Everything is arrange / act / inspect — each step a real operation
-No raw `HttpClient`/`ProduceAsync`/SQL or asserts in test bodies. Helpers live in [Clients/](Clients/):
+No raw `HttpClient`/`ProduceAsync`/SQL or asserts in test bodies. Helpers live in [Clients/](Clients/), one
+vocabulary file per phase:
 - **Arranges** ([ArrangeClientApi](Clients/ArrangeClientApi.cs)) perform real operations: `NewClient(out id, …)`
   → `POST`. Field mutators (`WithName`/`WithEmail`/`WithStatus`) compose a request over valid defaults.
-- **Act** is the operation under test — a private `Act(...)` method that resolves the relevant external
-  client from the stage (`Stage.ExecuteAsync<HttpClient>(…)` for a `PUT`,
-  `Stage.ExecuteAsync<IProducer<…>>(…)` to emit a message).
+- **Acts** ([ActClientApi](Clients/ActClientApi.cs)) are the operations under test, expressed as first-class
+  Act vocabulary on `ITestAct` (`Act` is a phase, symmetric with Arrange/Inspect, exposed as a property on
+  `BaseE2ETest`): `Act.CreateClient(…)` / `Act.UpdateClient(id, …)` return a `ClientWriteResult`;
+  `Act.ProduceStatusChanged(id, message)` is a void act that emits a Kafka message.
 - **Inspects** ([InspectClientApi](Clients/InspectClientApi.cs)) read outcomes back: `ApiClient(id, …)` /
   `ApiClientEventually(id, until)` (GET, with polling for async outcomes), `DbClient(id, …)` (direct DB),
   `EventPublished(topic, id)` (Kafka probe).
+
+A test can also be a whole **scenario** — a sequence of Arrange/Act/Inspect blocks walking a lifecycle
+(create → rename → suspend), see [ClientLifecycleScenarioTests](Clients/ClientLifecycleScenarioTests.cs).
 
 ## 3. Arrange/Act produce artifacts; Inspect only observes (reads OK, mutations not)
 
 This is the load-bearing rule that keeps AAA honest — it applies to **all three suites**.
 
-- **Act** performs the single action under test and **returns an artifact** — an id, a result/response
-  object, or a captured exception: `var result = await Act(...)`. An action that is a natural
-  *precondition* may instead live in **Arrange**, which hands off its artifact via `out Capture<T>`.
+- **Act** performs the single action under test and produces an artifact — either **returning** it
+  (`var result = await Act.CreateClient(...)`) or, for a void act, leaving its effect to be observed
+  downstream (`await Act.ProduceStatusChanged(id, message)`). An action that is a natural *precondition* may
+  instead live in **Arrange**, which hands off its artifact via `out Capture<T>`.
 - **Inspect only observes.** It may **read** — a `GET`, a DB query, a Kafka peek, a mock `Received` — and
   assert on the handed-over artifact. It must **never perform the mutating action under test** (POST/PUT/
   DELETE, produce a message, invoke the SUT command). *Reads in an inspect are fine; mutations are not.*
@@ -60,7 +66,7 @@ Worked examples here:
 - **Create is the Act** → returns a `ClientWriteResult`
   ([CreateClientFlowTests](Clients/CreateClientFlowTests.cs)):
   ```csharp
-  var result = await Act(WithName("Acme"), WithEmail("acme@e2e.test"));   // ACT → artifact
+  var result = await Act.CreateClient(WithName("Acme"), WithEmail("acme@e2e.test"));   // ACT → artifact
   await Inspect
       .WriteResult(result).Created()                     // assert the result
       .ApiClient(result.ClientId!.Value, c => …)         // observe downstream by its id
@@ -68,7 +74,7 @@ Worked examples here:
   ```
 - **Create as a precondition** → `Arrange.NewClient(out var id, …)` (the update flow needs an existing
   client first); its status check is a *setup guard*, not the assertion under test.
-- **A rejected write is still an Act**: `var result = await Act(WithEmail("bad")); Inspect.WriteResult(result).Rejected();`
+- **A rejected write is still an Act**: `var result = await Act.CreateClient(WithEmail("bad")); Inspect.WriteResult(result).Rejected();`
   — never a POST buried inside an inspect.
 - **`ApiClientNotFound` is a legitimate inspect** — a 404 `GET` is a *read*, not a mutation.
 
@@ -98,4 +104,4 @@ export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 ```
 
 Images are pulled only when missing (`PullPolicy.Missing`); pre-pull `postgres:15-alpine`, `redis:7-alpine`,
-`confluentinc/cp-kafka:7.6.0`, and `mcr.microsoft.com/dotnet/{sdk,aspnet}:8.0` to avoid slow first-run pulls.
+`confluentinc/cp-kafka:7.6.0`, and `mcr.microsoft.com/dotnet/{sdk,aspnet}:10.0` to avoid slow first-run pulls.

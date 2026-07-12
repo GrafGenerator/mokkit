@@ -1,0 +1,45 @@
+name: Docs
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - 'src/**'                 # rebuild the API reference when the library changes
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # .NET 8 runs the DocFX tool natively; .NET 10 matches global.json for building the projects.
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Generate API reference (DocFX → docs/public/api)
+        run: |
+          dotnet tool install -g docfx
+          docfx docs/docfx.json
+
+      - name: Build the docs site (Starlight, includes /api)
+        working-directory: docs
+        run: |
+          npm ci
+          npm run build
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy docs/dist --project-name=mokkit-docs

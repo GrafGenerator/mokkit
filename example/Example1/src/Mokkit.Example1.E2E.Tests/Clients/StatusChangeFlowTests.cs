@@ -18,12 +18,12 @@ public sealed class StatusChangeFlowTests : BaseE2ETest
     public async Task StatusChangedMessage_IsConsumed_AndReflectedEverywhere()
     {
         // ARRANGE — a real client created through the public API, then the status-changed message that will be
-        // fed to it. ArrangeStatusChanged's body is source-generated from [MokkitCapture] (see ArrangeMessages).
+        // fed to it. StatusChanged's body is source-generated from [MokkitCapture] (see ArrangeMessages).
         await Arrange
             .NewClient(out var clientId, WithName(Name), WithEmail(Email), WithPhone(Phone), WithStatus(ClientStatus.Active));
 
         await Arrange
-            .ArrangeStatusChanged(out var message, clientId, Name, Email, Phone, (int)ClientStatus.Suspended);
+            .StatusChanged(out var message, clientId, Name, Email, Phone, (int)ClientStatus.Suspended);
 
         // ACT — an upstream system emits the status-changed message onto Kafka (carrying the full record,
         // which the consumer validates before applying)

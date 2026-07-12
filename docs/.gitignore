@@ -1,0 +1,13 @@
+# build output
+dist/
+# generated types
+.astro/
+# dependencies
+node_modules/
+# DocFX-generated API reference (built in CI into public/api)
+public/api/
+# environment
+.env
+.env.production
+# DocFX intermediate metadata
+_api/

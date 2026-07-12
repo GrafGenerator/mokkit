@@ -24,8 +24,8 @@ public async Task Create_PersistsClient_UpdatesCache_AndPublishesCreatedEvent()
         .Ids(ArrangeClient.FixedClientId)
         .CreateClientCommand(out var command, WithName("Acme Corporation"));
 
-    // ACT — a private helper resolves the handler from the stage and calls it
-    var result = await Act(command);
+    // ACT — an Act verb dispatches the command through the real handler and returns the result
+    var result = await Act.SaveClient(command);
 
     // INSPECT — fluent chain on ITestInspect / ITestInspectScope<T>
     await Inspect
@@ -37,7 +37,7 @@ public async Task Create_PersistsClient_UpdatesCache_AndPublishesCreatedEvent()
 }
 ```
 
-`Arrange` and `Inspect` are properties on [`BaseIntegrationTest`](BaseIntegrationTest.cs); each
+`Arrange`, `Act` and `Inspect` are properties on [`BaseIntegrationTest`](BaseIntegrationTest.cs); each
 starts a fresh chain on the current test stage. `await` runs the chain.
 
 ---
@@ -91,12 +91,16 @@ Rules:
 
 ## 4. Act
 
-One private `Act(...)` per test class. Resolve the component from the stage and call it — nothing else:
+Act is a first-class phase (like Arrange/Inspect), expressed as **vocabulary** — one `Act<Feature>.cs` file
+per feature, colocated with the Arrange/Inspect files. Each verb resolves the component from the stage and
+calls it — nothing else:
 
 ```csharp
-private Task<SaveClientCommandResult> Act(SaveClientCommand command)
-    => Stage.ExecuteAsync<IRequestHandler<SaveClientCommand, SaveClientCommandResult>, SaveClientCommandResult>(
-           handler => handler.Handle(command).AsTask());
+// Features/Client/SaveClient/ActSaveClient.cs
+public static ITestAct<SaveClientCommandResult> SaveClient(this ITestAct act, SaveClientCommand command) =>
+    act.Returning(host =>
+        host.ExecuteAsync<IRequestHandler<SaveClientCommand, SaveClientCommandResult>, SaveClientCommandResult>(
+            handler => handler.Handle(command).AsTask()));
 ```
 
 The `Act` **returns an artifact** (`result`) that the inspects observe — it never asserts, and the inspects
@@ -158,7 +162,7 @@ Helpers/
   ArrangeClient.cs / InspectClient.cs  # cross-feature building blocks (root namespace)
   InspectValidation.cs                 # FluentValidation result inspects
 Features/Client/<Feature>/
-  Arrange<Feature>.cs  Inspect<Feature>.cs
+  Arrange<Feature>.cs  Act<Feature>.cs  Inspect<Feature>.cs
   <Handler>Tests.cs    <Validator>Tests.cs
   *.verified.txt
 ```
