@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/GrafGenerator/mokkit/feature/test-banner/assets/banner.png" alt="Mokkit — write tests that read like a story, in plain C#" width="820">
+  <img src="https://raw.githubusercontent.com/GrafGenerator/mokkit/main/assets/banner.png" alt="Mokkit — write tests that read like a story, in plain C#" width="820">
 </p>
 
 [![NuGet](https://img.shields.io/nuget/vpre/Mokkit.svg)](https://www.nuget.org/packages/Mokkit)
