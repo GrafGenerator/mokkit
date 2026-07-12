@@ -1,12 +1,10 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/GrafGenerator/mokkit/main/assets/og.png" alt="Mokkit — write tests that read like a story, in plain C#" width="860">
+  <img src="https://raw.githubusercontent.com/GrafGenerator/mokkit/main/assets/banner.png" alt="Mokkit — write tests that read like a story, in plain C#" width="820">
 </p>
 
 [![NuGet](https://img.shields.io/nuget/vpre/Mokkit.svg)](https://www.nuget.org/packages/Mokkit)
 [![CI](https://github.com/GrafGenerator/mokkit/actions/workflows/ci.yml/badge.svg)](https://github.com/GrafGenerator/mokkit/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-
-**Write tests that read like a story in your domain's language — as ordinary, compilable C#.**
 
 Mokkit gives your tests the readability of BDD tools like Cucumber/SpecFlow, but with **no DSL**: no feature
 files, no step bindings, no runtime glue. The "steps" are just C# extension methods you author — your
