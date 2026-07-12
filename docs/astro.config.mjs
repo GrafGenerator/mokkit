@@ -15,6 +15,10 @@ export default defineConfig({
         // PNG fallbacks for browsers that don't use the SVG favicon, plus the Apple touch icon.
         { tag: 'link', attrs: { rel: 'icon', href: '/favicon-32.png', type: 'image/png', sizes: '32x32' } },
         { tag: 'link', attrs: { rel: 'apple-touch-icon', href: '/favicon.png', sizes: '180x180' } },
+        // Social-preview card for shared links.
+        { tag: 'meta', attrs: { property: 'og:image', content: 'https://mokkit.net/og.png' } },
+        { tag: 'meta', attrs: { name: 'twitter:image', content: 'https://mokkit.net/og.png' } },
+        { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
       ],
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/GrafGenerator/mokkit' },
