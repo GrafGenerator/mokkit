@@ -11,7 +11,7 @@ files, no step bindings, no runtime glue. The "steps" are just C# extension meth
 project's testing vocabulary — so you keep full IDE support (autocomplete, go-to-definition, refactoring) and
 a test that doesn't make sense simply won't compile.
 
-It's a thin orchestration layer, not a framework: run it inside xUnit / NUnit / MSTest, mock with
+It's a thin orchestration layer, not a framework: run it inside xUnit / NUnit / MSTest / TUnit, mock with
 Moq / NSubstitute / FakeItEasy, and wire with Microsoft DI / Autofac / Castle Windsor (or the dependency-free
 Bag). The same Arrange / Act / Inspect vocabulary scales from a mocked unit test to a full Testcontainers
 end-to-end run.
