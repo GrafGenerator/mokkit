@@ -38,7 +38,7 @@ protected ITestInspect Inspect => Stage.Inspect();
 ```
 
 Each test enters a fresh stage over that fixed composition and disposes it afterwards. This is identical across
-xUnit / NUnit / MSTest — only the fixture attributes differ.
+xUnit / NUnit / MSTest / TUnit — only the fixture attributes differ.
 
 ## One container build → one fixture per SUT
 
@@ -69,7 +69,7 @@ No raw setup or assertions in a test body: every value is a business-named arran
 inspect, and the act returns (or captures) the artifact the inspects observe. If an inspect is doing the thing
 under test, lift it into Act; if an act asserts, move that into Inspect.
 
-## Three real layouts
+## Four real layouts
 
 The example organises each suite by whatever axis fits it — all following the rules above:
 
@@ -96,11 +96,16 @@ E2E.Tests/            # organised BY EXTERNAL SURFACE (xUnit + Testcontainers, n
 ├── Clients/         { ClientApi, ArrangeClientApi, ArrangeMessages, ActClientApi,
 │                      InspectClientApi, *FlowTests, ClientLifecycleScenarioTests }
 └── Contracts/       # suite-owned wire DTOs — not the service's internal types
+
+TUnit.Tests/          # PORTABILITY PROOF #2 (TUnit + FakeItEasy · Microsoft.Testing.Platform · dotnet run)
+├── TUnitTestBase.cs                # [Before(Test)]/[After(Test)] instead of IClassFixture
+└── Cache/           { CacheServiceFixture, ArrangeCache, InspectCache, …Tests }   # same Cache tests, new stack
 ```
 
 Unit organises **by SUT** (one fixture each), integration **by feature** (cross-feature helpers hoisted to the
-root), E2E **by external surface** (infra plumbing at the root, its own black-box contracts). Same Mokkit
-primitives throughout — only the surrounding stack changes.
+root), E2E **by external surface** (infra plumbing at the root, its own black-box contracts). The small
+**TUnit** suite re-runs the unit `Cache` tests on a fourth stack (TUnit + FakeItEasy) to prove the Mokkit code
+is unchanged. Same Mokkit primitives throughout — only the surrounding stack changes.
 
 ## Next
 

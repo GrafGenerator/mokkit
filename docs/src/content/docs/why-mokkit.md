@@ -74,7 +74,7 @@ test project as code — not as a separate artifact a non-engineer edits.
 
 ## What Mokkit is *not*
 
-- Not a test framework — it runs inside xUnit / NUnit / MSTest.
+- Not a test framework — it runs inside xUnit / NUnit / MSTest / TUnit.
 - Not a mocking library — it wraps Moq / NSubstitute / FakeItEasy.
 - Not a DI container — it wraps yours (or ships a trivial one).
 
