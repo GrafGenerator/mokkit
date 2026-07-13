@@ -49,8 +49,8 @@ Your [vocabulary](/concepts/vocabulary/) verbs are thin wrappers over exactly th
 ## Wiring it to your test framework
 
 Mokkit is framework-agnostic — the Stage is composed in whatever "run once" hook your runner offers and
-entered in its "per test" hook. The pattern is identical across xUnit, NUnit and MSTest; only the fixture
-attributes differ.
+entered in its "per test" hook. The pattern is identical across xUnit, NUnit, MSTest and TUnit; only the
+fixture attributes differ.
 
 ```csharp
 // xUnit — the composition is an IClassFixture (built once); each test enters a fresh stage.
@@ -69,8 +69,28 @@ public abstract class BaseUnitTest<TFixture> : IClassFixture<TFixture>, IDisposa
 }
 ```
 
+The same shape on **TUnit** (which runs on Microsoft.Testing.Platform) — the composition is a
+`[ClassDataSource]`, and the "per test" hooks are `[Before(Test)]` / `[After(Test)]`:
+
+```csharp
+// TUnit — the composition is injected once per class; hooks enter/dispose a fresh stage per test.
+public abstract class TUnitTestBase
+{
+    [ClassDataSource<CacheServiceFixture>(Shared = SharedType.PerClass)]
+    public required CacheServiceFixture Fixture { get; init; }
+
+    protected TestStage Stage { get; private set; } = null!;
+    protected ITestArrange Arrange => Stage.Arrange();
+    protected ITestInspect Inspect => Stage.Inspect();
+
+    [Before(Test)] public void Enter() => Stage = Fixture.EnterStage();
+    [After(Test)]  public void Exit()  => Stage.Dispose();
+}
+```
+
 Exposing `Arrange` / `Act` / `Inspect` as properties on a base fixture is what lets a test body read as
-`await Arrange.…` / `await Act.…` / `await Inspect.…` with no ceremony.
+`await Arrange.…` / `await Act.…` / `await Inspect.…` with no ceremony — the same three lines regardless of
+runner.
 
 ## One composition per system-under-test
 

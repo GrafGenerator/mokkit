@@ -60,7 +60,7 @@ Each phase is a fluent chain of the verbs you defined. See
 
 Mokkit assumes nothing about the rest of your stack:
 
-- **Test framework** — xUnit, NUnit, MSTest; Mokkit is just calls inside your test methods.
+- **Test framework** — xUnit, NUnit, MSTest, TUnit; Mokkit is just calls inside your test methods.
 - **Mocking** — first-class container packages for **Moq**, **NSubstitute** and **FakeItEasy** (or bring
   your own).
 - **DI container** — **Microsoft.Extensions.DependencyInjection**, **Autofac**, **Castle Windsor**, or the
