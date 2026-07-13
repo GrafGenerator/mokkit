@@ -15,6 +15,10 @@ completely different surrounding stack.
 The Mokkit pieces (`Stage`, `Arrange`, `Inspect`, `Capture`, `host.Execute`) are identical to the
 integration suite — only the libraries around them changed.
 
+> Taken further: the [`TUnit.Tests`](../Mokkit.Example1.TUnit.Tests/TUNIT-CONVENTIONS.md) suite re-runs this
+> suite's `Cache` tests on yet a **fourth** stack — **TUnit** (Microsoft.Testing.Platform) + **FakeItEasy** —
+> with the Mokkit code byte-for-byte identical. Compare `Cache/` in the two suites side by side.
+
 ---
 
 ## 1. Bring-your-own mock library: the custom NSubstitute container
