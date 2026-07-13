@@ -25,6 +25,7 @@
     <ItemGroup>
       <InternalsVisibleTo Include="Mokkit.Example1.Tests" />
       <InternalsVisibleTo Include="Mokkit.Example1.Unit.Tests" />
+      <InternalsVisibleTo Include="Mokkit.Example1.TUnit.Tests" />
       <!-- Lets NSubstitute/Castle DynamicProxy fake internal interfaces (e.g. IClientStatusChangedProcessor). -->
       <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
     </ItemGroup>
