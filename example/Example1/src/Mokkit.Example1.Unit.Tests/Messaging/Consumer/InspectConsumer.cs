@@ -26,7 +26,7 @@ internal static class InspectConsumer
         return inspect.Then(host =>
         {
             host.Execute<IClientStatusChangedProcessor>(processor =>
-                processor.Received(1).ProcessAsync(message.Value!.Message.Value, Arg.Any<CancellationToken>()));
+                processor.Received(1).ProcessAsync(message.Prop(m => m.Message.Value), Arg.Any<CancellationToken>()));
         });
     }
 
@@ -35,7 +35,7 @@ internal static class InspectConsumer
         return inspect.Then(host =>
         {
             host.Execute<IConsumer<string, string>>(consumer =>
-                consumer.Received(1).Commit(message.Value!));
+                consumer.Received(1).Commit(message.EnsureValue));
         });
     }
 

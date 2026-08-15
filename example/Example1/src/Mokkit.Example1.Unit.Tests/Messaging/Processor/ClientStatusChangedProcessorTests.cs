@@ -76,7 +76,7 @@ public sealed class ClientStatusChangedProcessorTests : BaseUnitTest<ProcessorFi
     }
 
     private Task Process(Capture<ClientStatusChangedMessage> message) =>
-        Process(KafkaMessageFaker.ToJson(message.Value!));
+        Process(KafkaMessageFaker.ToJson(message.EnsureValue));
 
     private Task Process(string json) =>
         Stage.ExecuteAsync<IClientStatusChangedProcessor>(processor => processor.ProcessAsync(json));

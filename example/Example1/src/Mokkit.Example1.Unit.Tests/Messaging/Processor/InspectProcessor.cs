@@ -18,15 +18,18 @@ internal static class InspectProcessor
     {
         return inspect.Then(host =>
         {
+            // One guarded read of the capture; the predicate then reads plain members off it.
+            var expected = message.EnsureValue;
+
             host.Execute<IRequestHandler<SaveClientCommand, SaveClientCommandResult>>(handler =>
                 handler.Received(1).Handle(
                     Arg.Is<SaveClientCommand>(c =>
                         c.Operation == SaveOperationKind.Update &&
-                        c.ClientData.Id == message.Value!.ClientId &&
-                        c.ClientData.Name == message.Value!.Name &&
-                        c.ClientData.Email == message.Value!.Email &&
-                        c.ClientData.Phone == message.Value!.Phone &&
-                        c.ClientData.Status == message.Value!.Status),
+                        c.ClientData.Id == expected.ClientId &&
+                        c.ClientData.Name == expected.Name &&
+                        c.ClientData.Email == expected.Email &&
+                        c.ClientData.Phone == expected.Phone &&
+                        c.ClientData.Status == expected.Status),
                     Arg.Any<CancellationToken>()));
         });
     }
@@ -36,14 +39,16 @@ internal static class InspectProcessor
     {
         return inspect.Then(host =>
         {
+            var expected = message.EnsureValue;
+
             host.Execute<IRequestHandler<SaveClientCommand, SaveClientCommandResult>>(handler =>
                 handler.Received(1).Handle(
                     Arg.Is<SaveClientCommand>(c =>
-                        c.ClientData.Id == message.Value!.ClientId &&
+                        c.ClientData.Id == expected.ClientId &&
                         c.ClientData.Name == string.Empty &&
                         c.ClientData.Email == string.Empty &&
                         c.ClientData.Phone == string.Empty &&
-                        c.ClientData.Status == message.Value!.Status),
+                        c.ClientData.Status == expected.Status),
                     Arg.Any<CancellationToken>()));
         });
     }
@@ -64,7 +69,7 @@ internal static class InspectProcessor
         return inspect.Then(host =>
         {
             host.Execute<IKafkaEventPublisher>(publisher =>
-                publisher.Received(1).PublishClientEventAsync(message.Value!.ClientId, "updated", Arg.Any<CancellationToken>()));
+                publisher.Received(1).PublishClientEventAsync(message.Prop(m => m.ClientId), "updated", Arg.Any<CancellationToken>()));
         });
     }
 

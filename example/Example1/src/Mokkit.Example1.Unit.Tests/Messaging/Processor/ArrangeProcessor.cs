@@ -39,7 +39,7 @@ internal static partial class ArrangeProcessor
         {
             host.Execute<IRequestHandler<SaveClientCommand, SaveClientCommandResult>>(handler =>
                 handler.Handle(Arg.Any<SaveClientCommand>(), Arg.Any<CancellationToken>())
-                    .Returns(new SaveClientCommandResult(true, message.Value!.ClientId)));
+                    .Returns(new SaveClientCommandResult(true, message.Prop(m => m.ClientId))));
         });
     }
 
@@ -51,7 +51,7 @@ internal static partial class ArrangeProcessor
         {
             host.Execute<IRequestHandler<SaveClientCommand, SaveClientCommandResult>>(handler =>
                 handler.Handle(Arg.Any<SaveClientCommand>(), Arg.Any<CancellationToken>())
-                    .Returns(new SaveClientCommandResult(false, message.Value!.ClientId,
+                    .Returns(new SaveClientCommandResult(false, message.Prop(m => m.ClientId),
                         new InvalidOperationException("update failed"))));
         });
     }

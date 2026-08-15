@@ -1,3 +1,4 @@
+using Mokkit.Inspect;
 using Mokkit.Example1.Application.Features.Client.GetClient;
 using Mokkit.Example1.Common;
 
@@ -14,11 +15,11 @@ public sealed class GetClientQueryHandlerTests : BaseIntegrationTest
             .CachedClient(out var cached);
 
         // ACT
-        var result = await Act.GetClient(new GetClientQuery { ClientId = cached.Value!.Id });
+        var result = await Act.GetClient(new GetClientQuery { ClientId = cached.Prop(c => c.Id) });
 
         // INSPECT — served from cache, so the handler does not write the cache again.
         await Inspect
-            .GetResult(result).Found(cached.Value!.Id)
+            .GetResult(result).Found(cached.Prop(c => c.Id))
             .CacheNotUpdated();
     }
 
@@ -31,12 +32,13 @@ public sealed class GetClientQueryHandlerTests : BaseIntegrationTest
             .DbClient(out var seeded);
 
         // ACT
-        var result = await Act.GetClient(new GetClientQuery { ClientId = seeded.Value!.Id });
+        var result = await Act.GetClient(new GetClientQuery { ClientId = seeded.Prop(c => c.Id) });
 
         // INSPECT — served from the database and written back into the cache.
         await Inspect
-            .GetResult(result).Found(seeded.Value!.Id)
-            .CacheUpdated(seeded.Value!.Id);
+            .Ensure(seeded, c => c.Id, out var clientId)
+            .GetResult(result).Found(clientId)
+            .CacheUpdated(clientId);
     }
 
     [Test]
