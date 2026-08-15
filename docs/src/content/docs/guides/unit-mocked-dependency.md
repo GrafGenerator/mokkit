@@ -43,7 +43,7 @@ public static ITestArrange HandlerSucceedsFor(
     this ITestArrange arrange, Capture<ClientStatusChangedMessage> message) =>
     arrange.Then(host => host.Execute<IRequestHandler<SaveClientCommand, SaveClientCommandResult>>(handler =>
         handler.Handle(Arg.Any<SaveClientCommand>(), Arg.Any<CancellationToken>())
-            .Returns(new SaveClientCommandResult(true, message.Value!.ClientId))));
+            .Returns(new SaveClientCommandResult(true, message.Prop(m => m.ClientId)))));
 ```
 
 **Inspect verbs** verify how the SUT drove those doubles — they only *read*:
@@ -55,13 +55,13 @@ public static ITestInspect HandledUpdate(
         handler.Received(1).Handle(
             Arg.Is<SaveClientCommand>(c =>
                 c.Operation == SaveOperationKind.Update &&
-                c.ClientData.Id == message.Value!.ClientId),
+                c.ClientData.Id == message.Prop(m => m.ClientId)),
             Arg.Any<CancellationToken>())));
 
 public static ITestInspect ConfirmationPublishedFor(
     this ITestInspect inspect, Capture<ClientStatusChangedMessage> message) =>
     inspect.Then(host => host.Execute<IKafkaEventPublisher>(publisher =>
-        publisher.Received(1).PublishClientEventAsync(message.Value!.ClientId, "updated", Arg.Any<CancellationToken>())));
+        publisher.Received(1).PublishClientEventAsync(message.Prop(m => m.ClientId), "updated", Arg.Any<CancellationToken>())));
 ```
 
 `host.Execute<T>(...)` resolves `T` from the stage. When `T` is a substituted type, you get the substitute — the
@@ -87,7 +87,7 @@ public sealed class ClientStatusChangedProcessorTests : BaseUnitTest<ProcessorFi
 
         // ACT — run the real processor over the message.
         await Stage.Act().Then(host =>
-            host.ExecuteAsync<IClientStatusChangedProcessor>(p => p.ProcessAsync(KafkaMessageFaker.ToJson(message.Value!))));
+            host.ExecuteAsync<IClientStatusChangedProcessor>(p => p.ProcessAsync(KafkaMessageFaker.ToJson(message.EnsureValue))));
 
         // INSPECT — it dispatched an Update and published the confirmation.
         await Inspect
