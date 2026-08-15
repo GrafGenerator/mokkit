@@ -49,6 +49,50 @@ await Inspect.ApiClient(clientId, c => c.Name.ShouldBe("Acme Holdings"));
 Reach for `Capture<T>` when you *want* the read to stand out — for instance a result whose `.Value` you unpack
 and assert on deliberately.
 
+## Guarded reads: `EnsureValue` and `Prop`
+
+`Value` is nullable, because a capture legitimately starts out empty. Read it before the chain has filled it
+and you get a `NullReferenceException` from somewhere deep in the test — so in practice a null-forgiving
+operator ends up in every read:
+
+```csharp
+await StoreClient(client.Value!);                 // the ! is load-bearing and unchecked
+var result = await GetClient(client.Value!.Id);
+```
+
+`ICapture<T>` offers guarded versions of both — so they work on `Capture<T>` and `Trapture<T>` alike:
+
+```csharp
+await StoreClient(client.EnsureValue);            // the whole value
+var result = await GetClient(client.Prop(c => c.Id));   // a member off it
+```
+
+`EnsureValue` is the capture-level member of the [`Ensure`](/guides/ensure/) family and uses that family's
+definition of "empty": an unfilled capture, or one holding `null` / `""` / `0` / `Guid.Empty` / an empty
+collection, fails loudly right at the read. That's what lets it catch an unfilled **value-type** capture too,
+where there is no `null` to check.
+
+`Prop` is exactly `propFn(EnsureValue)`: the *capture* is guarded, and the projected member comes back as-is,
+so a nullable member may still be `null`. It nests as far as you like — `message.Prop(m => m.Message.Value)`.
+
+Reach for `Prop` on a single member read, and `EnsureValue` when a step needs the whole artifact or several
+members off it:
+
+```csharp
+// One guarded read, then plain member access — better than five separate Prop calls.
+var expected = message.EnsureValue;
+
+handler.Received(1).Handle(Arg.Is<SaveClientCommand>(c =>
+    c.ClientData.Id == expected.ClientId &&
+    c.ClientData.Name == expected.Name &&
+    c.ClientData.Email == expected.Email), Arg.Any<CancellationToken>());
+```
+
+:::note
+`Value` stays useful where empty is a legitimate outcome — snapshotting a `Capture<Client?>` that models
+"not found", for instance. Use it deliberately there; use the guarded pair everywhere else.
+:::
+
 ## Producing a capture from a verb
 
 An Arrange (or Act) verb that creates an artifact starts a capture, then sets it inside the deferred step:
@@ -69,8 +113,9 @@ public static ITestArrange NewClient(
 }
 ```
 
-The interfaces behind this are small: `ICapture<out T>` exposes `Value`; `ICaptureInitializer<T>` exposes
-`Set(T)`. A verb takes the *initializer* to write and hands back the *capture* to read.
+The interfaces behind this are small: `ICapture<out T>` exposes `Value`, `EnsureValue` and `Prop`;
+`ICaptureInitializer<T>` exposes `Set(T)`. A verb takes the *initializer* to write and hands back the
+*capture* to read.
 
 ## Deriving one value from another: `Ensure`
 

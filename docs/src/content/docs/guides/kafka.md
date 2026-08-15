@@ -23,7 +23,7 @@ public async Task ValidMessage_UpdatesClient_AndPublishesConfirmation()
 
     // ACT — run the real processor over the raw payload.
     await Stage.Act().Then(host =>
-        host.ExecuteAsync<IClientStatusChangedProcessor>(p => p.ProcessAsync(KafkaMessageFaker.ToJson(message.Value!))));
+        host.ExecuteAsync<IClientStatusChangedProcessor>(p => p.ProcessAsync(KafkaMessageFaker.ToJson(message.EnsureValue))));
 
     // INSPECT — it dispatched an Update and published the confirmation.
     await Inspect

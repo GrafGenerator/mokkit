@@ -70,7 +70,7 @@ public sealed class SaveClientCommandHandlerTests : BaseIntegrationTest
 
         await Arrange
             .Clock(updatedAt)
-            .UpdateClientCommand(out var command, existing.Value!.Id,
+            .UpdateClientCommand(out var command, existing.Prop(c => c.Id),
                 WithName("Renamed Corporation"),
                 WithStatus((int)ClientStatus.Suspended));
 
@@ -79,8 +79,9 @@ public sealed class SaveClientCommandHandlerTests : BaseIntegrationTest
 
         // INSPECT — fields changed, CreatedAt preserved, UpdatedAt advanced, event published.
         await Inspect
-            .SaveResult(result).IsSuccess(existing.Value!.Id)
-            .DbClientById(existing.Value!.Id, out var saved, c =>
+            .Ensure(existing, e => e.Id, out var clientId)
+            .SaveResult(result).IsSuccess(clientId)
+            .DbClientById(clientId, out var saved, c =>
             {
                 Assert.That(c!.Name, Is.EqualTo("Renamed Corporation"));
                 Assert.That(c.Status, Is.EqualTo(ClientStatus.Suspended));
@@ -88,8 +89,8 @@ public sealed class SaveClientCommandHandlerTests : BaseIntegrationTest
                 Assert.That(c.UpdatedAt, Is.EqualTo(updatedAt));
             })
             .Verify(saved)
-            .CacheUpdated(existing.Value!.Id)
-            .EventPublished(existing.Value!.Id, "updated");
+            .CacheUpdated(clientId)
+            .EventPublished(clientId, "updated");
     }
 
     [Test]

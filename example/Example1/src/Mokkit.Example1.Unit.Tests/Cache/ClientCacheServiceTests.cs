@@ -21,12 +21,12 @@ public sealed class ClientCacheServiceTests : BaseUnitTest<CacheServiceFixture>
         await Arrange.CacheHasClient(out var client);
 
         // ACT
-        var result = await GetClient(client.Value!.Id);
+        var result = await GetClient(client.Prop(c => c.Id));
 
         // INSPECT
         await Inspect
-            .RetrievedClientMatching(result, client.Value!)
-            .CacheQueried(client.Value!.Id);
+            .RetrievedClientMatching(result, client.EnsureValue)
+            .CacheQueried(client.Prop(c => c.Id));
     }
 
     [Fact]
@@ -65,10 +65,10 @@ public sealed class ClientCacheServiceTests : BaseUnitTest<CacheServiceFixture>
         await Arrange.AClient(out var client);
 
         // ACT
-        await StoreClient(client.Value!);
+        await StoreClient(client.EnsureValue);
 
         // INSPECT
-        await Inspect.CacheStored(client.Value!);
+        await Inspect.CacheStored(client.EnsureValue);
     }
 
     [Fact]
