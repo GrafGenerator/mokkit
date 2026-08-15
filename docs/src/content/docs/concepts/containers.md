@@ -87,7 +87,7 @@ Everything above works with whichever pair you prefer. Each adapter is a small p
 | Dependency-free | `Mokkit.Containers.Bag` |
 | Shared contracts | `Mokkit.Containers.Common` (referenced transitively) |
 
-The suites in the [example](https://github.com/GrafGenerator/mokkit/tree/main/example/Example1) deliberately
+The suites in the [example](https://github.com/GrafGenerator/Mokkit/tree/main/example/Example1) deliberately
 use *different* stacks — NSubstitute + MS-DI for units, Moq + MS-DI for integration, Bag for E2E — to prove
 the test body never depends on the choice.
 

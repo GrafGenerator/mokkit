@@ -9,7 +9,7 @@
     <Copyright>Nikita Ivanov</Copyright>
     <!-- Project homepage on nuget.org points at the docs site; source stays on GitHub via RepositoryUrl. -->
     <PackageProjectUrl>https://mokkit.net</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/GrafGenerator/mokkit</RepositoryUrl>
+    <RepositoryUrl>https://github.com/GrafGenerator/Mokkit</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
