@@ -8,11 +8,6 @@ import { Tabs, TabItem } from '@astrojs/starlight/components';
 You install **three things**: the core, one **container adapter** for your DI container (or the trivial
 Bag), and — if your tests use mocks — one **mock adapter** for your mocking library.
 
-:::note[Prerelease]
-Mokkit is currently published as a prerelease (`0.3.0-preview.1`). Add `--prerelease` (CLI) or reference the
-exact version so NuGet will resolve it.
-:::
-
 ## A minimal unit-test setup
 
 Core + Microsoft DI + NSubstitute is a common starting point:
@@ -20,17 +15,17 @@ Core + Microsoft DI + NSubstitute is a common starting point:
 <Tabs>
   <TabItem label="dotnet CLI">
 ```bash
-dotnet add package Mokkit --prerelease
-dotnet add package Mokkit.Containers.Microsoft.Extensions.DependencyInjection --prerelease
-dotnet add package Mokkit.Containers.NSubstitute --prerelease
+dotnet add package Mokkit
+dotnet add package Mokkit.Containers.Microsoft.Extensions.DependencyInjection
+dotnet add package Mokkit.Containers.NSubstitute
 ```
   </TabItem>
   <TabItem label="PackageReference">
 ```xml
 <ItemGroup>
-  <PackageReference Include="Mokkit" Version="0.3.0-preview.1" />
-  <PackageReference Include="Mokkit.Containers.Microsoft.Extensions.DependencyInjection" Version="0.3.0-preview.1" />
-  <PackageReference Include="Mokkit.Containers.NSubstitute" Version="0.3.0-preview.1" />
+  <PackageReference Include="Mokkit" Version="0.4.0" />
+  <PackageReference Include="Mokkit.Containers.Microsoft.Extensions.DependencyInjection" Version="0.4.0" />
+  <PackageReference Include="Mokkit.Containers.NSubstitute" Version="0.4.0" />
 </ItemGroup>
 ```
   </TabItem>
