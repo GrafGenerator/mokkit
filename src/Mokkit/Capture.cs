@@ -1,3 +1,5 @@
+using System;
+
 namespace Mokkit;
 
 /// <summary>
@@ -20,6 +22,27 @@ public class Capture<T> : ICapture<T>, ICaptureInitializer<T>
     /// </summary>
     internal Capture()
     {
+    }
+
+    /// <summary>
+    /// Gets the captured value, guarded — <c>capture.EnsureValue</c> instead of
+    /// <c>capture.Value!</c>. Fails loudly when the capture is unfilled or its value is empty.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the capture is unfilled or its value is empty.</exception>
+    public T EnsureValue => CaptureGuard.EnsureValue(Value, "Capture");
+
+    /// <summary>
+    /// Reads a member off the captured value — <c>client.Prop(c =&gt; c.Id)</c> instead of
+    /// <c>client.Value!.Id</c>.
+    /// </summary>
+    /// <typeparam name="TProp">The type of the member being read.</typeparam>
+    /// <param name="propFn">Projects the member from the (non-null) captured value.</param>
+    /// <returns>The projected member, which may itself be <c>null</c> if the member is nullable.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="propFn"/> is <c>null</c>.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the capture has not been initialized with a value.</exception>
+    public TProp? Prop<TProp>(Func<T, TProp> propFn)
+    {
+        return CaptureGuard.Prop(Value, propFn, "Capture");
     }
 
     /// <summary>

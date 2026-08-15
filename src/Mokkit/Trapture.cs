@@ -36,6 +36,28 @@ public class Trapture<T> : ICapture<T>, ICaptureInitializer<T>
     }
 
     /// <summary>
+    /// Gets the captured value, guarded — <c>trapture.EnsureValue</c> instead of
+    /// <c>trapture.Value!</c>. Fails loudly when the capture is unfilled or its value is empty.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when the capture is unfilled or its value is empty.</exception>
+    public T EnsureValue => CaptureGuard.EnsureValue(Value, "Trapture");
+
+    /// <summary>
+    /// Reads a member off the captured value — <c>message.Prop(m =&gt; m.ClientId)</c> instead of
+    /// <c>message.Value!.ClientId</c>. Useful even here, where the implicit conversion covers whole-value
+    /// reads but not member reads.
+    /// </summary>
+    /// <typeparam name="TProp">The type of the member being read.</typeparam>
+    /// <param name="propFn">Projects the member from the (non-null) captured value.</param>
+    /// <returns>The projected member, which may itself be <c>null</c> if the member is nullable.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="propFn"/> is <c>null</c>.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the trapture has not been initialized with a value.</exception>
+    public TProp? Prop<TProp>(Func<T, TProp> propFn)
+    {
+        return CaptureGuard.Prop(Value, propFn, "Trapture");
+    }
+
+    /// <summary>
     /// Sets the captured value. This method is called internally by the capture system.
     /// </summary>
     /// <param name="value">The value to capture.</param>

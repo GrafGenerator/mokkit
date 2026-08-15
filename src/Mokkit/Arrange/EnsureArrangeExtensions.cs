@@ -14,7 +14,7 @@ public static class EnsureArrangeExtensions
     /// Derives a value from an already-arranged capture, guards it as non-empty, and captures it into
     /// <paramref name="captured"/> for use after the arrange chain is awaited.
     /// </summary>
-    /// <typeparam name="TSource">The captured source type (e.g. an entity).</typeparam>
+    /// <typeparam name="TSource">The captured source type (e.g. an entity, or an id).</typeparam>
     /// <typeparam name="T">The derived value type (e.g. its id).</typeparam>
     /// <param name="arrange">The arrange chain.</param>
     /// <param name="source">The source capture to read once the chain runs.</param>
@@ -28,14 +28,16 @@ public static class EnsureArrangeExtensions
         Func<TSource, T> selector,
         out Trapture<T> captured,
         string? because = null)
-        where TSource : class
     {
         var initializer = Trapture.Start(out captured);
 
         return arrange.Then(_ =>
         {
-            var sourceValue = source.Value
-                ?? throw new InvalidOperationException("Ensure failed: the source capture is not initialized.");
+            if (source.Value is not { } sourceValue)
+            {
+                throw new InvalidOperationException(
+                    EnsureGuard.Message(typeof(T), because, "came from an uninitialized capture"));
+            }
 
             initializer.Set(EnsureGuard.NotEmpty(selector(sourceValue), because));
         });
