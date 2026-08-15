@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/GrafGenerator/mokkit/main/assets/banner.png" alt="Mokkit — write tests that read like a story, in plain C#" width="820">
+  <img src="https://raw.githubusercontent.com/GrafGenerator/Mokkit/main/assets/banner.png" alt="Mokkit — write tests that read like a story, in plain C#" width="820">
 </p>
 
 [![NuGet](https://img.shields.io/nuget/v/Mokkit.svg)](https://www.nuget.org/packages/Mokkit)
-[![CI](https://github.com/GrafGenerator/mokkit/actions/workflows/ci.yml/badge.svg)](https://github.com/GrafGenerator/mokkit/actions/workflows/ci.yml)
+[![CI](https://github.com/GrafGenerator/Mokkit/actions/workflows/ci.yml/badge.svg)](https://github.com/GrafGenerator/Mokkit/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 Mokkit gives your tests the readability of BDD tools like Cucumber/SpecFlow, but with **no DSL**: no feature
@@ -144,9 +144,9 @@ and it is actively developed: expect API changes before 1.0, with verbose output
 among the things still missing. Adapters for other containers and mock libraries are straightforward to add.
 
 What it most needs right now is feedback that isn't mine. Would you write your tests this way — and if not,
-what puts you off? [Discussions](https://github.com/GrafGenerator/mokkit/discussions) is the place for that,
+what puts you off? [Discussions](https://github.com/GrafGenerator/Mokkit/discussions) is the place for that,
 and for anything open-ended; a reproducible bug or a concrete feature request is best as an
-[issue](https://github.com/GrafGenerator/mokkit/issues).
+[issue](https://github.com/GrafGenerator/Mokkit/issues).
 
 ## Documentation
 

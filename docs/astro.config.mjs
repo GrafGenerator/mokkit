@@ -21,10 +21,10 @@ export default defineConfig({
         { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
       ],
       social: [
-        { icon: 'github', label: 'GitHub', href: 'https://github.com/GrafGenerator/mokkit' },
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/GrafGenerator/Mokkit' },
       ],
       editLink: {
-        baseUrl: 'https://github.com/GrafGenerator/mokkit/edit/main/docs/',
+        baseUrl: 'https://github.com/GrafGenerator/Mokkit/edit/main/docs/',
       },
       sidebar: [
         {
