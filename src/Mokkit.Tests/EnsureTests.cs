@@ -11,7 +11,7 @@ public class EnsureTests
 {
     private sealed record Holder(Guid? Id);
 
-    private sealed record Entity(Guid Id);
+    private sealed record Entity(Guid Id, string Name = "Acme");
 
     // A stage-free inspect chain — the eager Ensure overloads never touch the stage.
     // Fully qualified because 'Inspect' also names the Mokkit.Inspect namespace.
@@ -105,6 +105,90 @@ public class EnsureTests
 
         await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await stage.Arrange().Ensure(() => Guid.Empty, out Trapture<Guid> _));
+    }
+
+    // --- Inspect: reference-type selector (sibling of the nullable-struct overload) ---
+
+    [Fact]
+    public void InspectEnsure_ReferenceSelector_Captures()
+    {
+        Inspector().Ensure(new Entity(Guid.NewGuid(), "Acme"), e => e.Name, out string name);
+
+        Assert.Equal("Acme", name);
+    }
+
+    [Fact]
+    public void InspectEnsure_ReferenceSelector_Throws_WhenNull()
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            Inspector().Ensure(new Holder(null), _ => (string?)null, out string _));
+    }
+
+    [Fact]
+    public void InspectEnsure_ReferenceSelector_Throws_WhenEmpty()
+    {
+        Assert.Throws<InvalidOperationException>(() =>
+            Inspector().Ensure(new Entity(Guid.NewGuid(), string.Empty), e => e.Name, out string _));
+    }
+
+    // --- Inspect: capture-shaped source ---
+
+    [Fact]
+    public void InspectEnsure_CaptureSource_CapturesValueMember()
+    {
+        var initializer = Capture.Start(out Capture<Entity> source);
+        var id = Guid.NewGuid();
+        initializer.Set(new Entity(id));
+
+        Inspector().Ensure(source, e => e.Id, out Guid captured);
+
+        Assert.Equal(id, captured);
+    }
+
+    [Fact]
+    public void InspectEnsure_CaptureSource_CapturesReferenceMember()
+    {
+        var initializer = Capture.Start(out Capture<Entity> source);
+        initializer.Set(new Entity(Guid.NewGuid(), "Acme"));
+
+        Inspector().Ensure(source, e => e.Name, out string captured);
+
+        Assert.Equal("Acme", captured);
+    }
+
+    [Fact]
+    public void InspectEnsure_CaptureSource_Throws_WhenCaptureUnset()
+    {
+        Capture.Start(out Capture<Entity> source);
+
+        Assert.Throws<InvalidOperationException>(() =>
+            Inspector().Ensure(source, e => e.Id, out Guid _));
+    }
+
+    [Fact]
+    public void InspectEnsure_CaptureSource_Throws_WhenMemberEmpty()
+    {
+        var initializer = Capture.Start(out Capture<Entity> source);
+        initializer.Set(new Entity(Guid.Empty));
+
+        Assert.Throws<InvalidOperationException>(() =>
+            Inspector().Ensure(source, e => e.Id, out Guid _));
+    }
+
+    // --- Arrange: the source capture no longer has to be a reference type ---
+
+    [Fact]
+    public async Task ArrangeEnsure_Selector_AcceptsValueTypeSource()
+    {
+        var stage = await StageHelper.EmptyStage();
+        var sourceInitializer = Trapture.Start(out Trapture<Guid> source);
+        var id = Guid.NewGuid();
+
+        await stage.Arrange()
+            .Then(_ => sourceInitializer.Set(id))
+            .Ensure(source, g => g.ToString(), out var captured);
+
+        Assert.Equal(id.ToString(), (string)captured);
     }
 
     private static void AssertGuardThrows<T>(T value) =>
