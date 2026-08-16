@@ -6,7 +6,7 @@
 [![CI](https://github.com/GrafGenerator/Mokkit/actions/workflows/ci.yml/badge.svg)](https://github.com/GrafGenerator/Mokkit/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Mokkit gives your tests the readability of BDD tools like Cucumber/SpecFlow, but with **no DSL**: no feature
+Mokkit gives your tests the readability of BDD, but with **no DSL**: no feature
 files, no step bindings, no runtime glue. The "steps" are just C# extension methods you author — your
 project's testing vocabulary — so you keep full IDE support (autocomplete, go-to-definition, refactoring) and
 a test that doesn't make sense simply won't compile.
