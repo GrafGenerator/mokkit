@@ -36,7 +36,7 @@ So you carry a second language and a runtime binding layer, and you inherit thei
 
 ## Mokkit's answer: it's just code
 
-Mokkit keeps the readable, sentence-like scenario but drops the separate language. The "steps" are C#
+Mokkit keeps the readable, sentence-like scenario but drops the separate language. The "steps" are C# or Go
 extension methods you author — your **domain vocabulary** — and a test simply composes them:
 
 ```csharp
@@ -50,7 +50,7 @@ Because a Mokkit test is ordinary code, the trade-offs invert:
 
 | | BDD / DSL (Cucumber, SpecFlow) | Mokkit |
 | --- | --- | --- |
-| Readability | ✅ Gherkin prose | ✅ Sentence-like C# |
+| Readability | ✅ Gherkin prose | ✅ Sentence-like C# / Go |
 | Separate language to learn | Yes (Gherkin + bindings) | **No** |
 | Steps bound at | Runtime (regex/strings) | **Compile time** |
 | IDE navigation / rename / find-usages | Limited | **Full** |

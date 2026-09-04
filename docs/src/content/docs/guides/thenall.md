@@ -3,6 +3,12 @@ title: Parallel inspects with ThenAll
 description: Run independent observations concurrently — three downstream effects at once — while the chain stays ordered and readable.
 ---
 
+:::note[In Go]
+The counterpart is `All(steps...)`: branches run concurrently, every failure is reported (Inspect fails
+soft), and `mokkit.Group("db", step1, step2)` makes a multi-step branch. Branches report by returning an
+error — never by failing the test from their own goroutine.
+:::
+
 After an act, you often need to check several *independent* effects: the API read, the database row, the
 published event. Checked one after another they serialise — and each may involve a
 [poll with a timeout](/guides/eventually-consistent/), so the waits add up. **`ThenAll`** runs a group of

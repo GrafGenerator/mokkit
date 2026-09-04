@@ -3,6 +3,13 @@ title: Write a custom container adapter
 description: Not using Moq, NSubstitute, FakeItEasy, or Microsoft DI? The adapter contract is tiny — this walks through a real one end to end.
 ---
 
+:::note[In Go]
+The Go contract is three small interfaces — `ContainerBuilder` (build once), `Container` (one scope per
+stage), `Scope` (`TryResolveType` + `Close`) — plus optional `PathResolver` if your scope's factories
+resolve their own collaborators, so a dependency cycle that crosses containers is reported instead of
+deadlocking. The five shipped adapters are each ~150–250 lines and make good templates.
+:::
+
 Mokkit ships adapters for Moq, NSubstitute, FakeItEasy, Microsoft DI, Autofac and Castle Windsor. If your stack
 isn't in that list, you write an adapter — and the contract is small. This page walks the example's own
 `SubstituteContainerBuilder` (a from-scratch NSubstitute container) to show the whole thing.

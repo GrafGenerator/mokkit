@@ -39,7 +39,25 @@ await Inspect
 ```
 
 Read top to bottom, that test *is* its own specification: build → check → act → check → act → check. No
-Gherkin, no step-binding file — just compilable C# that happens to read like the scenario it verifies.
+Gherkin, no step-binding file — just compilable code that happens to read like the scenario it verifies.
+
+:::note[The same story in Go]
+The shape carries over untouched — a scenario is a sequence of eager chains, and the id threads through
+the story under a [token](/concepts/tokens/) instead of a capture:
+
+```go
+f.Arrange().NewClient[Acme](WithStatus(Active))
+f.Inspect().ApiClientStatus(f.Of[Acme]().ID, Active)
+
+renamed := f.Act().UpdateClient(f.Of[Acme]().ID, WithName("Acme Holdings"))
+f.Inspect().Updated(renamed).ApiClientNamed(f.Of[Acme]().ID, "Acme Holdings")
+
+f.Act().ProduceStatusChanged(f.Of[Acme]().ID, suspend)
+f.Inspect().
+    ApiClientEventually(f.Of[Acme]().ID, Suspended).
+    EventPublished("clients.updated", f.Of[Acme]().ID)
+```
+:::
 
 ## How it holds together
 

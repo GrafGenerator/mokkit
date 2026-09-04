@@ -1,0 +1,190 @@
+---
+title: Arrange / Act / Inspect
+description: The three-phase shape every Mokkit test follows, and the discipline that keeps tests honest.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Every Mokkit test tells the same three-part story. It's the classic Arrange-Act-Assert, with the assert
+phase renamed **Inspect** to make its one rule explicit: it only *observes*.
+
+## One difference to hold on to: deferred vs eager
+
+The two languages run their chains differently, and most other differences follow from this one:
+
+- **C# chains are deferred.** `.Then(...)` records a step; nothing happens until you `await` the chain.
+  Deferral is what makes captures necessary — an arrange hands back a *placeholder* for a value that
+  doesn't exist yet.
+- **Go chains are eager.** By the time a verb returns, its step has already run. There is no terminal
+  call, no placeholder to hold, and an Act verb can simply *return* its result. Artifacts travel through
+  [tokens](/concepts/tokens/) instead of captures.
+
+Same story, different engine. The rest of this page shows both.
+
+## Arrange
+
+Arrange sets up the world: stub a collaborator, seed a database, put a message on a queue. Each step
+receives the test host, so it can resolve and configure services.
+
+<Tabs syncKey="lang">
+<TabItem label="C#">
+
+`stage.Arrange()` starts a fluent chain. Each `.Then(...)` registers a step; **`await`-ing the chain runs
+the steps in order:**
+
+```csharp
+await stage.Arrange()
+    .Then(host => host.Execute<Mock<IClock>>(clock =>
+        clock.Setup(x => x.UtcNow).Returns(FixedNow)))
+    .Then(async host => await host.ExecuteAsync<Db>(db => db.Seed(...)));
+```
+
+Deferral is what lets an arrange hand back a **capture** — a placeholder for a value that doesn't exist
+yet:
+
+```csharp
+var init = Capture.Start(out Capture<Client> client);      // client is empty for now
+return arrange.Then(_ => init.Set(new Client(...)));         // filled when the chain runs
+```
+
+After the `await`, `client.Value` holds the created client. Captures are how the artifacts an arrange
+creates flow into later steps. See [Capture vs Trapture](/concepts/captures/).
+
+</TabItem>
+<TabItem label="Go">
+
+`stage.Arrange()` starts a chain that runs each step **as it is added** — there is nothing to await:
+
+```go
+f.Arrange().
+    ClockIsFixed(fixedNow).
+    DbSeeded(rows)
+```
+
+An arrange that produces something files it under a **token**, and any later phase reads it back by the
+role's name — no placeholder, because by the time the verb returns the artifact already exists:
+
+```go
+f.Arrange().
+    NewClient[Buyer](WithName("Acme Corporation"))
+
+// any later phase:
+f.Of[Buyer]() // the client, as a value
+```
+
+See [Tokens](/concepts/tokens/). Arrange fails **hard** — a broken setup makes every later step
+meaningless, so the first failing step ends the test.
+
+</TabItem>
+</Tabs>
+
+## Act
+
+Act is the one thing under test — and, like Arrange and Inspect, it's a **first-class phase**. An Act
+operation is reusable **vocabulary** too, and it produces the artifact the later Inspect observes.
+
+<Tabs syncKey="lang">
+<TabItem label="C#">
+
+An Act comes in three flavors, depending on what (if anything) the operation hands back:
+
+```csharp
+// Void — the operation's effects are observed downstream (e.g. a message is emitted onto a bus).
+await stage.Act().Then(host => host.ExecuteAsync<IProducer>(p => p.ProduceAsync(topic, message)));
+
+// Return — the operation returns its artifact directly (the familiar `var result = await ...`).
+var result = await stage.Act().Returning(host =>
+    host.ExecuteAsync<SaveClientHandler, SaveResult>(handler => handler.Handle(command)));
+
+// Capture — the operation threads its result forward through an out capture, exactly like Arrange.
+await stage.Act().SaveClient(out var result, command);
+```
+
+`Execute`/`ExecuteAsync` come in 1-to-4-service arities, so an Act can pull several collaborators at once.
+
+</TabItem>
+<TabItem label="Go">
+
+Eager execution collapses C#'s three flavors to one: the verb is concrete, so it names its own return
+type and simply hands the result back:
+
+```go
+func (a Act) SaveClient(cmd SaveCommand) SaveResult {
+	a.Helper()
+
+	var out SaveResult
+	a.Add("SaveClient", func(ctx context.Context, h mokkit.Host) error {
+		var err error
+		out, err = h.Resolve[*SaveClientHandler]().Handle(ctx, cmd)
+
+		return err
+	})
+
+	return out
+}
+
+// in the test:
+result := f.Act().SaveClient(cmd)
+```
+
+Inside a step, `h.Resolve[T]()` pulls any collaborator from the stage. Act fails hard, like Arrange.
+
+</TabItem>
+</Tabs>
+
+As with Arrange and Inspect, teams give their Acts domain names — `Act.CreateClient(...)`,
+`Act.ProduceStatusChanged(...)` — so the test body reads as the story it tells. When a test is a whole
+*sequence* of Act steps interleaved with checks, see **[Scenario tests](/concepts/scenarios/)**.
+
+## Inspect
+
+Inspect steps **read** the world — query the database, verify a mock, poll an endpoint — and assert on
+it. They must not mutate state.
+
+<Tabs syncKey="lang">
+<TabItem label="C#">
+```csharp
+await stage.Inspect()
+    .SaveResult(result).IsSuccess()          // a value scope over the result
+    .DbClientExists(id)                       // reads the database
+    .EventPublished("clients.created", id);   // verifies a mock
+```
+
+Inspect also offers two power tools, covered in the guides:
+
+- **Value scopes** — `ThenValueScope(value)` opens a focused block of assertions over one value.
+- **Parallel inspects** — `ThenAll(...)` runs independent observations concurrently while the chain stays
+  readable.
+
+</TabItem>
+<TabItem label="Go">
+```go
+f.Inspect().
+    SaveResult(result).IsSuccess().          // a value scope over the result
+    DbClientExists(result.ID).               // reads the database
+    All(                                     // independent observations, concurrently
+        eventPublished(f, "clients.created", result.ID),
+        auditRowWritten(f, result.ID),
+    )
+```
+
+Inspect fails **soft**: a failing observation reports and the chain keeps going, so one run tells you
+everything that is wrong — what C# reaches for `Assert.Multiple` to get. Value scopes are ordinary
+vocabulary types carrying the value as a field; `All` runs branches concurrently, and `mokkit.Group`
+turns several steps into one branch.
+
+</TabItem>
+</Tabs>
+
+## The discipline: produce vs observe
+
+One rule keeps tests trustworthy and reads across the whole suite:
+
+> **Arrange and Act *produce* artifacts. Inspect only *observes* them.**
+
+If setting something up needs a side effect, it belongs in Arrange (or is the Act itself). Inspect never
+creates or changes state — so you can always trust that a failing Inspect is reporting on what Act did, not
+on something Inspect itself caused.
+
+The verbs in these three chains — `SaveResult`, `DbClientExists`, `EventPublished` — are the heart of the
+matter. They're your project's **[test vocabulary](/concepts/vocabulary/)**.

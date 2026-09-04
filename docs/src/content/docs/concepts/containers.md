@@ -9,12 +9,16 @@ test arranges is the very same instance the real service under test calls.
 
 ## Two roles a container plays
 
-- **Mock containers** hold your test doubles — Moq mocks, NSubstitute substitutes, FakeItEasy fakes.
-- **DI containers** compose the *real* application — Microsoft DI, Autofac, Castle Windsor.
-- The dependency-free **Bag** is a third option: it just holds a few instances you hand it, no framework at
-  all (great for a first test or a small SUT).
+- **Mock containers** hold your test doubles — Moq mocks, NSubstitute substitutes, FakeItEasy fakes in
+  C#; gomock, mockery/testify or minimock mocks in Go.
+- **DI containers** compose the *real* application — Microsoft DI, Autofac, Castle Windsor in C#;
+  samber/do or uber-go/dig in Go.
+- The dependency-free **Bag** is a third option both sides ship: it holds the instances and factories you
+  hand it, no framework at all. In Go, where hand-wiring *is* the idiom, Bag is the primary container
+  rather than a fallback.
 
-You pass the builders for these to `TestStageSetup.Create(...)`, and they're composed together into one Stage.
+You pass the builders for these to the setup (`TestStageSetup.Create(...)` / `mokkit.NewSetup(...)`), and
+they're composed together into one Stage.
 
 ## The mock→DI bridge
 
@@ -62,6 +66,29 @@ The `UsePreBuild<ISubstituteCollection>(...)` hook is the one moment the four-ph
 is where the DI builder gets to *see* the mock container's registrations, so it can wire a `ResolveFromStage`
 for each. After that, the composition is built and every stage entered from it shares the arrangement.
 
+:::note[The bridge in Go]
+Go Mokkit needs no build phases for this: every container's factories receive a **resolver spanning the
+whole composition**, so a factory just pulls collaborators wherever they live. In the DI adapters the same
+idea is spelled per container — `mokkitdo.FromStage[UserRepository](inj)` inside a samber/do provider, or
+`mokkitdig.Bridge[UserRepository](di)` to teach dig to take a dependency from the stage:
+
+```go
+mocks := mokkitgomock.New()
+mokkitgomock.Add[UserRepository](mocks, NewMockUserRepository)
+
+di := mokkitdig.New()
+di.Provide(func(users UserRepository) *DiscountService {
+    return &DiscountService{Users: users}
+})
+mokkitdig.Expose[*DiscountService](di)
+mokkitdig.Bridge[UserRepository](di)   // dig asks the stage; the stage answers with the mock
+
+setup, err := mokkit.NewSetup(ctx, mocks, di)
+```
+
+The real service and the test share the same mock instance — the identical guarantee, without phases.
+:::
+
 The result reads exactly the way you'd want:
 
 ```csharp
@@ -80,21 +107,22 @@ await Inspect.CacheNotUpdated();
 
 Everything above works with whichever pair you prefer. Each adapter is a small package:
 
-| Role | Packages |
-| --- | --- |
-| Mock library | `Mokkit.Containers.Moq` · `.NSubstitute` · `.FakeItEasy` |
-| DI container | `Mokkit.Containers.Microsoft.Extensions.DependencyInjection` · `.Autofac` · `.CastleWindsor` |
-| Dependency-free | `Mokkit.Containers.Bag` |
-| Shared contracts | `Mokkit.Containers.Common` (referenced transitively) |
+| Role | C# packages | Go modules |
+| --- | --- | --- |
+| Mock library | `Mokkit.Containers.Moq` · `.NSubstitute` · `.FakeItEasy` | `container/mokkitgomock` · `mokkitmockery` · `mokkitminimock` |
+| DI container | `Mokkit.Containers.Microsoft.Extensions.DependencyInjection` · `.Autofac` · `.CastleWindsor` | `container/mokkitdo` · `container/mokkitdig` |
+| Dependency-free | `Mokkit.Containers.Bag` | `container/bag` (in the core module) |
+| Shared contracts | `Mokkit.Containers.Common` (transitively) | the core `mokkit` package itself |
 
 The suites in the [example](https://github.com/GrafGenerator/Mokkit/tree/main/example/Example1) deliberately
 use *different* stacks — NSubstitute + MS-DI for units, Moq + MS-DI for integration, Bag for E2E — to prove
 the test body never depends on the choice.
 
 :::tip[Rolling your own]
-The adapter contract (`IDependencyContainerBuilder` → `IDependencyContainer`) is small. If your stack isn't
-covered, you can write an adapter — see [Write a custom container adapter](/guides/custom-container-adapter/),
-which walks through `SubstituteContainerBuilder`.
+The adapter contract is small in both languages — `IDependencyContainerBuilder` → `IDependencyContainer`
+in C#, `ContainerBuilder` → `Container` → `Scope` (three one-method-ish interfaces) in Go. If your stack
+isn't covered, you can write an adapter — see
+[Write a custom container adapter](/guides/custom-container-adapter/).
 :::
 
 ## Next

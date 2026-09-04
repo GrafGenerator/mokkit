@@ -3,6 +3,13 @@ title: The Bag container
 description: A dependency-free container that just holds the instances you give it — perfect for a first test or a stage of pre-built external clients.
 ---
 
+:::note[In Go]
+Go's Bag is the *primary* container, not a fallback — hand-wiring is the language's idiom.
+`bag.Instance` shares one value across stages, `bag.Scoped` builds per stage (closed with the stage when
+it implements `io.Closer`), and `bag.Alias[Iface, *Impl]` makes one double answer under both its types.
+Factories receive a resolver spanning the whole composition, which is the entire mock→DI bridge.
+:::
+
 Not every test needs a DI framework. The **Bag** (`Mokkit.Containers.Bag`) is a trivial container that holds
 instances you hand it — no auto-wiring, no options, no dependency on Microsoft DI. It's the right tool for two
 situations: your very first test, and a stage that just needs to hold some pre-built clients.

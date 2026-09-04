@@ -3,6 +3,11 @@ title: Wire a real DI container + bridge mocks
 description: Compose the real application from your DI container while a mock container feeds test doubles into it.
 ---
 
+:::note[In Go]
+The same wiring with samber/do or dig is shown in [Containers](/concepts/containers/): `mokkitdo.FromStage`
+inside a provider, or `mokkitdig.Bridge`/`Expose` on the builder.
+:::
+
 Hand-wiring a service with the [Bag](/guides/bag-container/) is fine for a small SUT, but real code is usually
 assembled by a DI container — and you want to test the *real* composition, with only the outermost
 collaborators faked. Mokkit does this by running two containers side by side and **bridging** them: a mock

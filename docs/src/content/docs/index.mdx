@@ -1,9 +1,9 @@
 ---
 title: Mokkit
-description: Write tests that read like a story in your domain's language — as plain, compilable C#.
+description: Write tests that read like a story in your domain's language — as plain, compilable C# or Go.
 template: splash
 hero:
-  tagline: The readability of Cucumber/SpecFlow — without a DSL. Your tests read like a story in your domain's language, but they're ordinary, compilable C# with full IDE and compiler support.
+  tagline: The readability of Cucumber/SpecFlow — without a DSL. Your tests read like a story in your domain's language, but they're ordinary, compilable C# or Go with full IDE and compiler support.
   actions:
     - text: Get started
       link: /introduction/
@@ -11,14 +11,20 @@ hero:
     - text: Why Mokkit?
       link: /why-mokkit/
       variant: minimal
-    - text: GitHub
+    - text: Mokkit for .NET
       link: https://github.com/GrafGenerator/Mokkit
+      icon: external
+      variant: minimal
+    - text: Mokkit for Go
+      link: https://github.com/GrafGenerator/go-mokkit
       icon: external
       variant: minimal
 ---
 
-import { Card, CardGrid } from '@astrojs/starlight/components';
+import { Card, CardGrid, Tabs, TabItem } from '@astrojs/starlight/components';
 
+<Tabs syncKey="lang">
+<TabItem label="C#">
 ```csharp
 await Arrange
     .NewClient(out var client, WithName("Acme Corporation"))
@@ -34,19 +40,44 @@ await Inspect
         b => b.DbClientExists(id),
         b => b.EventPublished("clients.created", id));
 ```
+</TabItem>
+<TabItem label="Go">
+```go
+f.Arrange().
+    NewClient[Client](WithName("Acme Corporation")).
+    CacheHasClient(f.Of[Client]())
+
+result := f.Act().Create(f.Of[Client]())
+
+f.Inspect().
+    Created(result).
+    All(
+        apiClientMatches(f, result.ID, "Acme Corporation"),
+        dbClientExists(f, result.ID),
+        eventPublished(f, "clients.created", result.ID),
+    )
+```
+</TabItem>
+</Tabs>
 
 <CardGrid stagger>
   <Card title="Reads like prose" icon="open-book">
     Tests are composed from **domain verbs** you name yourself — `NewClient`, `CacheHasClient`,
     `EventPublished`. The AAA (Arrange / Act / Inspect) shape keeps every test telling the same story.
   </Card>
-  <Card title="No DSL, no feature files" icon="seti:c-sharp">
-    It's just C#. No Gherkin, no step bindings, no generated glue. Refactor a verb and every test that
-    uses it updates — and still compiles.
+  <Card title="No DSL, no feature files" icon="pencil">
+    It's just your language. No Gherkin, no step bindings, no generated glue. Refactor a verb and every
+    test that uses it updates — and still compiles.
+  </Card>
+  <Card title="Two languages, one idea" icon="random">
+    A .NET original and a Go port that share the shape, the vocabulary discipline and the docs. Each
+    speaks its language natively — captures and source generators in C#, tokens and generic methods in
+    Go — and this site teaches both side by side.
   </Card>
   <Card title="Bring your own everything" icon="puzzle">
-    Framework-agnostic (xUnit / NUnit / MSTest / TUnit), mock-agnostic (Moq / NSubstitute / FakeItEasy) and
-    container-agnostic (Microsoft DI / Autofac / Castle Windsor — or the dependency-free Bag).
+    Framework-, mock- and container-agnostic: xUnit / NUnit / MSTest / TUnit, Moq / NSubstitute /
+    FakeItEasy, Microsoft DI / Autofac — or gomock / mockery / minimock, samber-do / dig — or the
+    dependency-free Bag either side ships.
   </Card>
   <Card title="From unit to end-to-end" icon="rocket">
     The same Arrange / Act / Inspect vocabulary scales from a mocked unit test to a full

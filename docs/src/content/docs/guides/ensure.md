@@ -3,6 +3,11 @@ title: "Ensure: derive, guard, capture"
 description: Turn "the result's id" into a clean, non-empty capture in one step — so ids flow between phases without null-checks littering the test.
 ---
 
+:::note[In Go]
+`Ensure` has no Go equivalent, because the problems it solves are covered elsewhere: ids flow between
+verbs under [tokens](/concepts/tokens/), and the "was it ever produced?" guard is `Of`'s loud failure.
+:::
+
 A recurring need: take a value off an artifact (an entity's id), make sure it isn't empty, and thread it into
 later steps. Done by hand that's `result.ClientId!.Value` plus a guard plus a capture — noise that repeats in
 every test. **`Ensure`** does all three in one call: **derive → guard-as-non-empty → capture**.

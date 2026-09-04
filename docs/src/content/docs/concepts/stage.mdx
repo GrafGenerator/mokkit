@@ -3,6 +3,8 @@ title: The Stage & lifecycle
 description: Where your services live during a test — how a Stage is composed once and entered fresh for every test.
 ---
 
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 The **Stage** is the runtime a test runs against. It holds the services a test resolves — the real
 system-under-test plus its (real or mocked) collaborators — and it's what `Arrange`, `Act` and `Inspect`
 pull from. Everything else in Mokkit sits on top of it.
@@ -11,11 +13,13 @@ pull from. Everything else in Mokkit sits on top of it.
 
 A Stage comes in two steps:
 
-1. **`TestStageSetup.Create(...builders)`** composes your [containers](/concepts/containers/) — this is the
-   expensive part, and you do it **once**.
-2. **`setup.EnterStage()`** returns a fresh, isolated `TestStage` — you do this **once per test**, and dispose
-   it afterwards.
+1. **Composing** builds your [containers](/concepts/containers/) — this is the expensive part, and you do
+   it **once**.
+2. **Entering a stage** returns a fresh, isolated world — you do this **once per test**; it is released
+   when the test ends.
 
+<Tabs syncKey="lang">
+<TabItem label="C#">
 ```csharp
 // Once — usually in a class/collection fixture.
 var setup = await TestStageSetup.Create(
@@ -28,12 +32,29 @@ var stage = setup.EnterStage();
 // ... arrange / act / inspect ...
 stage.Dispose();
 ```
+</TabItem>
+<TabItem label="Go">
+```go
+// Once — in TestMain (never init: strict lint configs forbid it).
+setup, err := mokkit.NewSetup(context.Background(), mocks, app)
 
-Each `EnterStage()` opens its own scope, so tests are isolated: scoped services are created per stage and
-disposed when the stage is disposed. Nothing leaks between tests.
+// Per test. Cleanup is registered with t automatically.
+stage := setup.EnterStage(t)
+```
+
+`EnterStage(t)` registers the stage's release with `t.Cleanup`, so there is nothing to dispose by hand; a
+scoped service that implements `io.Closer` is closed when the stage ends.
+
+</TabItem>
+</Tabs>
+
+Each entered stage opens its own scope, so tests are isolated: scoped services are created per stage and
+released with it. Nothing leaks between tests.
 
 ## What a Stage gives you
 
+<Tabs syncKey="lang">
+<TabItem label="C#">
 ```csharp
 stage.Arrange();   // → ITestArrange — start the setup chain
 stage.Act();       // → ITestAct     — start the act chain
@@ -44,6 +65,25 @@ stage.ExecuteAsync<TService, TOut>(svc => ...);   // resolve, run, return a resu
 ```
 
 `Execute`/`ExecuteAsync` come in 1-to-4-service arities, so a step can pull several collaborators at once.
+
+</TabItem>
+<TabItem label="Go">
+```go
+stage.Arrange()   // *mokkit.Chain — fails hard
+stage.Act()       // *mokkit.Chain — fails hard
+stage.Inspect()   // *mokkit.Chain — fails soft
+
+mokkit.Resolve[*SignupService](stage)   // resolve straight off the stage
+stage.Tokens()                          // the per-test artifact registry
+```
+
+Inside a step, `h.Resolve[T]()` does the resolving; a small per-suite **fixture** embeds
+`stage.Tokens()` so tests read `f.Of[Buyer]()`. Stages can also be observed — every step, with phase,
+name, duration and outcome — which is how the [Allure reporter](/guides/reporting-allure/) works.
+
+</TabItem>
+</Tabs>
+
 Your [vocabulary](/concepts/vocabulary/) verbs are thin wrappers over exactly these calls.
 
 ## Wiring it to your test framework

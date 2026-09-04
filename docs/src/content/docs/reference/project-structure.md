@@ -111,3 +111,27 @@ is unchanged. Same Mokkit primitives throughout — only the surrounding stack c
 
 - **[Conventions cheat-sheet](/reference/conventions/)** — the one-screen version of this.
 - **[Building your test vocabulary](/concepts/vocabulary/)** — what fills the `Arrange*`/`Act*`/`Inspect*` files.
+
+## The Go layout
+
+One test package per system-under-test, colocated with it; the suite files follow the strict placement
+rule from the [conventions](/reference/conventions/):
+
+```
+internal/billing/
+    service.go
+    service_test.go          # tests only
+    fixture_test.go          # TestMain, composition, fixture, tokens — no verbs
+    arrange_test.go          # Arrange verbs
+    act_test.go              # Act verbs
+    inspect_test.go          # Inspect verbs + plain-function Steps
+    fakes_test.go            # hand doubles, when not generated
+tests/
+    harness/                 # a real package: containers, migrations, stack bring-up
+    integration/<feature>/   # suites over real infrastructure
+    e2e/                     # the whole application, driven over HTTP
+```
+
+Two Go-specific notes: the shared **harness** is a normal (non-`_test`) package so several suites can use
+it, and generated mocks live next to the interface they double (`mocks_test.go` in the package, or an
+`internal/` fixture package inside the adapter that owns them).

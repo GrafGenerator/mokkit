@@ -3,6 +3,12 @@ title: Value & context scopes in Inspect
 description: Focus a run of assertions on one value, and wrap them in a context — a single Assert.Multiple, a transaction — with inspect scopes.
 ---
 
+:::note[In Go]
+Scopes need no API at all: a value scope is an ordinary vocabulary type carrying the value as a field
+(`Retrieved(result).Found().Named("Acme")`), and a context scope is plain Go — eager chains mean
+`defer tx.Rollback()` simply works around a chain.
+:::
+
 Most inspect verbs read the world and assert. Sometimes, though, several assertions all concern **one value** —
 a result object, a fetched entity — and you want them grouped. That's an **inspect scope**: a focused block of
 checks over a single value, opened with `ThenValueScope`.
