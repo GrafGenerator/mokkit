@@ -3,12 +3,8 @@ title: "Tokens: roles as types"
 description: How Go Mokkit tests declare, produce and read artifacts — a typed token instead of a capture, checked by the compiler.
 ---
 
-Go Mokkit has no captures — eager chains delete the placeholder they existed to make safe. What remains
-is the real question captures answered: **how does an artifact travel between phases** without a `var`
-declared above the test, and without a stringly-typed lookup?
-
-The answer is a **token**: a type that names a role, and declares in the same line what that role stands
-for.
+Go Mokkit has no captures. Artifacts travel between phases through a **token**: a type that names a
+role, and declares in the same line what that role stands for.
 
 ```go
 type (
@@ -38,9 +34,8 @@ discount := f.Act().DiscountFor[Cart]()
 | `f.Of[Buyer]()` | read | `User` — a value | loudly, if no verb produced the role |
 | `f.Ref[Buyer]()` | read | `*User` — the pointer | loudly, if no verb produced the role |
 
-**Prefer `Of`.** A value cannot be written through by accident, which keeps a read-only phase read-only.
-Reach for `Ref` when the artifact has *identity* — a recording double whose state the Act mutates and a
-later Inspect observes; a copy there would silently assert on stale state.
+Use `Ref` when the artifact has *identity* — a recording double whose state the Act mutates and a later
+Inspect observes. Everywhere else use `Of`.
 
 Reading a role nobody produced fails at the test's line, naming what *was* arranged:
 
@@ -49,8 +44,6 @@ discount_test.go:23: mokkit: nothing arranged for main_test.Ghost (have: main_te
 ```
 
 ## What the compiler checks
-
-This is where tokens beat both `out var` captures and any string-keyed registry:
 
 - A **misspelt role** is `undefined: Byer` — a build error.
 - A **role of the wrong kind** is a build error too: a verb declared
@@ -91,9 +84,8 @@ client := f.Arrange().AClient(WithName("Acme"))
 result := f.Act().GetClient(client.ID)
 ```
 
-Nothing declared above, no pointer, and go-to-definition lands on the verb that made it. The cost: such a
-verb is terminal — its return type ends the chain — which is exactly why the token form exists for tests
-with more than one actor. A suite mixes both freely.
+Such a verb is terminal — its return type ends the chain — so use the token form for tests with more
+than one actor. A suite mixes both freely.
 
 Tokens are static by nature: a role is a type, so it cannot be picked at run time. A table-driven loop
 over "roles" is what the return form is for — bind the artifact to the loop variable.

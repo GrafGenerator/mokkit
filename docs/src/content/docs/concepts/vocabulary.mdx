@@ -217,8 +217,8 @@ func (i Inspect) EventPublished(topic, clientID string) Inspect {
 }
 ```
 
-A verb's first line is `i.Helper()` — that is what makes a failure report the test's line rather than
-the verb's body — and it reports by returning an error, never by failing the test directly.
+A verb's first line is `i.Helper()`, so a failure reports the test's line rather than the verb's body.
+A step reports by returning an error, never by failing the test directly.
 
 </TabItem>
 </Tabs>
@@ -242,8 +242,7 @@ in seconds.
 ## Where verbs live
 
 Keep vocabulary next to what it describes, and out of the files where the tests live. In C# that is
-colocated `Arrange<Feature>.cs` / `Inspect<Feature>.cs` files per feature; in Go the convention has teeth
-worth stating:
+colocated `Arrange<Feature>.cs` / `Inspect<Feature>.cs` files per feature; in Go:
 
 ```
 fixture_test.go     composition, tokens, the fixture. No verbs.
@@ -253,9 +252,8 @@ inspect_test.go     Inspect verbs, and the plain-function Steps And/All take
 <feature>_test.go   tests — and nothing else
 ```
 
-A verb defined in a scenario file is invisible: the next person writes a second one beside it instead of
-reusing the first, and the vocabulary stops compounding. And keep verbs **atomic** — one named condition
-each — so a refusal-path test differs from the success path by exactly one verb. The
+Keep verbs **atomic** — one named condition each — so a refusal-path test differs from the success
+path by exactly one verb. The
 [project structure](/reference/project-structure/) page shows both layouts; the [guides](/quickstart/)
 build real vocabulary for mocked services, databases, message queues and full end-to-end flows.
 
@@ -268,7 +266,6 @@ noise:
 - **`Ensure`** (C#) — derive, guard-as-non-empty, and capture a value in one step, so ids flow cleanly
   between verbs. In Go, [tokens](/concepts/tokens/) carry ids between verbs and `Of` supplies the guard.
 - **`[MokkitCapture]`** (C#) — let the source generator write the boilerplate body of a "build this
-  object" arrange verb. Go struct literals with option funcs are already that terse, so the Go port
-  deliberately has no generator.
+  object" arrange verb. The Go port has no generator; struct literals with option funcs fill the role.
 
 Each is covered in its own guide.

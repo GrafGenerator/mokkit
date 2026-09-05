@@ -13,8 +13,7 @@ phase renamed **Inspect** to make its one rule explicit: it only *observes*.
 The two languages run their chains differently, and most other differences follow from this one:
 
 - **C# chains are deferred.** `.Then(...)` records a step; nothing happens until you `await` the chain.
-  Deferral is what makes captures necessary — an arrange hands back a *placeholder* for a value that
-  doesn't exist yet.
+  An arrange hands back a *capture* — a placeholder for a value that doesn't exist yet.
 - **Go chains are eager.** By the time a verb returns, its step has already run. There is no terminal
   call, no placeholder to hold, and an Act verb can simply *return* its result. Artifacts travel through
   [tokens](/concepts/tokens/) instead of captures.

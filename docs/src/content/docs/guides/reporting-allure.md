@@ -24,7 +24,7 @@ func TestMain(m *testing.M) {
 
 	var reporter *allure.Reporter
 	if dir := os.Getenv("ALLURE_OUTPUT_PATH"); dir != "" {
-		if reporter, err = allure.New(dir, allure.WithSuite("cards e2e")); err != nil {
+		if reporter, err = allure.New(dir, allure.WithSuite("clients e2e")); err != nil {
 			panic(err)
 		}
 		setup.Observe(reporter)
@@ -52,20 +52,20 @@ One file per test, whose steps are the test's own vocabulary, with real timings:
 
 ```json
 {
-  "name": "TestOrange_AnAllowedPartyActivatesAndDrawsAVirtualCard",
+  "name": "TestCreateClient_PublishesTheCreatedEvent",
   "status": "passed",
   "steps": [
-    { "name": "arrange: AnOrangeCategory[Orange]", "status": "passed" },
-    { "name": "arrange: AFreeVirtualCardInThePool[Orange]", "status": "passed" },
-    { "name": "act: RegisterCard[Orange]", "status": "passed" },
-    { "name": "inspect: theOutboxPayloadMentions", "status": "passed" }
+    { "name": "arrange: NewClient[Client]", "status": "passed" },
+    { "name": "arrange: CacheHasClient[Client]", "status": "passed" },
+    { "name": "act: CreateClient[Client]", "status": "passed" },
+    { "name": "inspect: EventPublished", "status": "passed" }
   ]
 }
 ```
 
 A step that failed carries its message and trace; a step that **panicked** is reported as `broken` rather
-than `failed`, so triage can tell an assertion from a crash. `historyId` is stable across runs (it hashes
-the suite and test name), which is what lets TestOps track history and retries.
+than `failed`. `historyId` is stable across runs — it hashes the suite and test name — so TestOps can
+track history and retries.
 
 ## The observer seam itself
 

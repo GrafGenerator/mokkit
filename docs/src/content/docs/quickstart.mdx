@@ -112,8 +112,7 @@ func TestMain(m *testing.M) {
 }
 ```
 
-`bag.Scoped` builds a fresh double per stage, so nothing leaks between tests; `bag.Alias` is what makes
-one instance answer under both types.
+`bag.Scoped` builds a fresh double per stage; `bag.Alias` makes one instance answer under both types.
 
 </TabItem>
 </Tabs>
