@@ -60,3 +60,27 @@ The short version of the [project structure](/reference/project-structure/) and
 
 - Depend on `IDateTimeProvider` / `IIdGenerator`, not `DateTime.UtcNow` / `Guid.NewGuid()`.
 - Arrange them with `Clock(…)` / `Ids(…)` and shared fixed constants.
+
+## Go: what changes on the cheat-sheet
+
+Everything above holds in spirit; these lines replace their C# counterparts:
+
+- **Vocabulary** — verbs are methods on your own `Arrange` / `Act` / `Inspect` types embedding
+  `*mokkit.Chain`. First line of every verb: `a.Helper()`; then one `return mokkit.Do(a, …)`, or
+  `a.Get(…)` / `a.Try(…)` / `a.Attempt(…)` for an act. Steps are named after the verb; the `For` forms
+  append a role, the `As` forms take a name. Verbs report by **returning an error**, never by failing the
+  test — hand assertion libraries `c.TB()`, not the chain.
+- **File placement** — `fixture_test.go` (no verbs) · `vocabulary_test.go` · `<feature>_test.go` (tests
+  only); split the vocabulary by phase when it grows past a few hundred lines. A verb in a scenario file
+  stops the vocabulary compounding.
+- **Atomic verbs** — one named condition per verb, so a refusal test differs from the success path by
+  exactly one verb; a verb that needs an earlier one says so in its error.
+- **Artifacts** — no captures. Named roles are [tokens](/concepts/tokens/): `f.New[K]()` to produce,
+  `f.Of[K]()` to read (a value; prefer it), `f.Ref[K]()` when the artifact has identity. A one-off
+  artifact is just returned by the verb and bound with `:=`.
+- **Stage & fixtures** — compose in `TestMain`, never `init`; `Enter[Arrange, Act, Inspect](t)`
+  registers its own cleanup and hands back `mokkit.Fixture`, with `Of`/`New`/`Ref` promoted onto it.
+- **Failure semantics** — Arrange/Act fail hard, Inspect fails soft; `All(...)` for concurrent
+  observations, `mokkit.Group` for multi-step branches.
+- **Interaction asserts** — stub broadly in Arrange (`AnyTimes`-style), assert interactions in Inspect —
+  via a captured value or the adapter's `Satisfied()` — so failures land on the test's line.

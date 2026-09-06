@@ -3,6 +3,14 @@ title: Pick a mock library
 description: Moq, NSubstitute, or FakeItEasy — choose the mock container that matches your library; the test shape never changes.
 ---
 
+:::note[In Go]
+The Go adapters follow one shape — the mock registers under **two types** (the interface for the subject,
+the mock's own type for `EXPECT`-style arranging), one controller per stage bound to that test:
+**mokkitgomock** (go.uber.org/mock, plus `Satisfied()` to pull an unmet expectation onto the test's
+line), **mokkitmockery** (mockery/testify, same `Satisfied()`), and **mokkitminimock** (reports at
+cleanup; use capture-and-inspect for on-the-line interaction asserts).
+:::
+
 Mokkit doesn't ship a mocking framework — it *adapts* one. Three adapters come in the box, and swapping between
 them changes only how you configure and read a double, never the shape of a test.
 

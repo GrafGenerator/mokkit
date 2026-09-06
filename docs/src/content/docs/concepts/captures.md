@@ -3,6 +3,12 @@ title: "Captures: Capture vs Trapture"
 description: How an artifact created in one phase threads into the next while the whole chain stays deferred.
 ---
 
+:::note[Coming from Go?]
+Captures exist because C# chains are **deferred** — a placeholder must stand in for a value that will
+only exist when the chain is awaited. Go Mokkit's chains are eager, so captures have no Go equivalent;
+artifacts travel through typed [tokens](/concepts/tokens/) instead.
+:::
+
 Arrange and Act are **deferred**: `.Then(...)` only *records* a step; nothing runs until you `await`. That
 raises a question — if the client isn't created until the chain runs, how does a later step refer to it? The
 answer is a **capture**: a typed placeholder handed back immediately and filled when the step runs.

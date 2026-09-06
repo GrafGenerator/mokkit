@@ -8,7 +8,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'Mokkit',
-      description: "Write tests that read like a story in your domain's language — as plain, compilable C#.",
+      description: "Write tests that read like a story in your domain's language — as plain, compilable C# or Go.",
       logo: { src: './src/assets/logo.svg', alt: 'Mokkit' },
       favicon: '/favicon.svg',
       head: [
@@ -21,7 +21,8 @@ export default defineConfig({
         { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
       ],
       social: [
-        { icon: 'github', label: 'GitHub', href: 'https://github.com/GrafGenerator/Mokkit' },
+        { icon: 'github', label: 'Mokkit for .NET', href: 'https://github.com/GrafGenerator/Mokkit' },
+        { icon: 'github', label: 'Mokkit for Go', href: 'https://github.com/GrafGenerator/go-mokkit' },
       ],
       editLink: {
         baseUrl: 'https://github.com/GrafGenerator/Mokkit/edit/main/docs/',
@@ -43,7 +44,8 @@ export default defineConfig({
             { label: 'Building your test vocabulary', slug: 'concepts/vocabulary' },
             { label: 'Scenario tests', slug: 'concepts/scenarios' },
             { label: 'The Stage & lifecycle', slug: 'concepts/stage' },
-            { label: 'Captures: Capture vs Trapture', slug: 'concepts/captures' },
+            { label: 'Captures: Capture vs Trapture', slug: 'concepts/captures', badge: { text: 'C#', variant: 'note' } },
+            { label: 'Tokens: roles as types', slug: 'concepts/tokens', badge: { text: 'Go', variant: 'tip' } },
             { label: 'Containers & the mock→DI bridge', slug: 'concepts/containers' },
           ],
         },
@@ -59,6 +61,7 @@ export default defineConfig({
             { label: 'Test a Kafka consumer / producer', slug: 'guides/kafka' },
             { label: 'Async / eventually-consistent assertions', slug: 'guides/eventually-consistent' },
             { label: 'Deterministic time & ids', slug: 'guides/deterministic-time-ids' },
+            { label: 'Report to Allure', slug: 'guides/reporting-allure', badge: { text: 'Go', variant: 'tip' } },
           ],
         },
         {
@@ -66,9 +69,9 @@ export default defineConfig({
           items: [
             { label: 'Value & context scopes', slug: 'guides/inspect-scopes' },
             { label: 'Parallel inspects with ThenAll', slug: 'guides/thenall' },
-            { label: 'Ensure: derive, guard, capture', slug: 'guides/ensure' },
-            { label: 'Snapshot assertions with Verify', slug: 'guides/verify-snapshots' },
-            { label: 'Source-generated arranges', slug: 'guides/mokkit-capture' },
+            { label: 'Ensure: derive, guard, capture', slug: 'guides/ensure', badge: { text: 'C#', variant: 'note' } },
+            { label: 'Snapshot assertions with Verify', slug: 'guides/verify-snapshots', badge: { text: 'C#', variant: 'note' } },
+            { label: 'Source-generated arranges', slug: 'guides/mokkit-capture', badge: { text: 'C#', variant: 'note' } },
           ],
         },
         {
@@ -84,7 +87,8 @@ export default defineConfig({
             { label: 'How to structure a test project', slug: 'reference/project-structure' },
             { label: 'Conventions cheat-sheet', slug: 'reference/conventions' },
             // DocFX-generated static site under /api (built separately in CI).
-            { label: 'API reference', link: '/api/' },
+            { label: 'API reference (C#)', link: '/api/' },
+            { label: 'API reference (Go)', link: 'https://pkg.go.dev/github.com/GrafGenerator/go-mokkit', attrs: { target: '_blank' } },
           ],
         },
       ],

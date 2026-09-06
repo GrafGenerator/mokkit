@@ -1,0 +1,256 @@
+---
+title: Quickstart
+description: Write a complete Mokkit test — build a Stage, define a verb, and inspect an outcome — in a few minutes.
+---
+
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+This walks through a full (if tiny) Mokkit test — with xUnit and NSubstitute in C#, with `testing` and a
+hand-rolled fake in Go. See [Installation](/installation/) for the packages.
+
+## 1. The system under test
+
+A service with one dependency we'll want to stand in for:
+
+<Tabs syncKey="lang">
+<TabItem label="C#">
+```csharp
+public interface IEmailSender
+{
+    Task SendWelcome(string address);
+}
+
+public sealed class SignupService(IEmailSender email)
+{
+    public async Task<Guid> Register(string address)
+    {
+        await email.SendWelcome(address);
+        return Guid.NewGuid();
+    }
+}
+```
+</TabItem>
+<TabItem label="Go">
+```go
+type EmailSender interface {
+	SendWelcome(ctx context.Context, address string) error
+}
+
+type SignupService struct {
+	Email EmailSender
+}
+
+func (s *SignupService) Register(ctx context.Context, address string) (uuid.UUID, error) {
+	if err := s.Email.SendWelcome(ctx, address); err != nil {
+		return uuid.Nil, err
+	}
+
+	return uuid.New(), nil
+}
+```
+</TabItem>
+</Tabs>
+
+## 2. Build a Stage
+
+The **Stage** is where your services live during a test. Here we use the dependency-free **Bag** container
+to hold a double and the service under test — the double is reachable both under its own type (to arrange
+and observe it) and behind the interface the subject receives:
+
+<Tabs syncKey="lang">
+<TabItem label="C#">
+```csharp
+using Mokkit.Containers.Bag;
+using Mokkit.Suite;
+using NSubstitute;
+
+public sealed class SignupTests
+{
+    private static async Task<TestStage> NewStage()
+    {
+        var email = Substitute.For<IEmailSender>();
+
+        var setup = await TestStageSetup.Create(
+            new BagContainerBuilder()
+                .AddInstance(email)
+                .AddInstance(new SignupService(email)));
+
+        return setup.EnterStage();
+    }
+}
+```
+</TabItem>
+<TabItem label="Go">
+```go
+// fakeEmail records what the subject asked it to send.
+type fakeEmail struct {
+	sent []string
+}
+
+func (f *fakeEmail) SendWelcome(_ context.Context, address string) error {
+	f.sent = append(f.sent, address)
+
+	return nil
+}
+
+var composition *mokkit.Setup
+
+func TestMain(m *testing.M) {
+	b := bag.New()
+	bag.Fresh[fakeEmail](b)
+	bag.Alias[EmailSender, *fakeEmail](b)
+	bag.Scoped(b, func(r mokkit.Resolver) *SignupService {
+		return &SignupService{Email: mokkit.Resolve[EmailSender](r)}
+	})
+
+	setup, err := mokkit.NewSetup(context.Background(), b)
+	if err != nil {
+		panic(err)
+	}
+	composition = setup
+	m.Run()
+}
+```
+
+`bag.Fresh` builds a zero-value double per stage; `bag.Alias` makes one instance answer under both types.
+
+</TabItem>
+</Tabs>
+
+:::tip[The real-world setup]
+Hand-wiring with Bag is perfect for a first test. In practice you'll usually resolve the *real* service from
+your DI container and let a mock container bridge substitutes into it — see
+[Wire a real DI container](/concepts/containers/). The test body below doesn't change.
+:::
+
+## 3. Define a verb (your vocabulary)
+
+An **Inspect verb** observes an outcome. This one reads "a welcome email was sent to…":
+
+<Tabs syncKey="lang">
+<TabItem label="C#">
+
+In C#, vocabulary is extension methods:
+
+```csharp
+using Mokkit.Inspect;
+
+public static class SignupVocabulary
+{
+    public static ITestInspect WelcomeEmailSent(this ITestInspect inspect, string toAddress) =>
+        inspect.Then(host => host.Execute<IEmailSender>(email =>
+            email.Received(1).SendWelcome(toAddress)));
+}
+```
+</TabItem>
+<TabItem label="Go">
+
+In Go, vocabulary is methods on your own types embedding `*mokkit.Chain`. `mokkit.Do` runs the step and
+hands the type back; an Act verb returns its result through `Get`:
+
+```go
+type (
+	Arrange struct{ *mokkit.Chain }
+	Act     struct{ *mokkit.Chain }
+	Inspect struct{ *mokkit.Chain }
+)
+
+func (a Act) Register(address string) uuid.UUID {
+	a.Helper()
+
+	return a.Get(func(h mokkit.Host) (uuid.UUID, error) {
+		return h.Resolve[*SignupService]().Register(h.Context(), address)
+	})
+}
+
+func (i Inspect) WelcomeEmailSent(toAddress string) Inspect {
+	i.Helper()
+
+	return mokkit.Do(i, func(h mokkit.Host) error {
+		if slices.Contains(h.Resolve[*fakeEmail]().sent, toAddress) {
+			return nil
+		}
+
+		return fmt.Errorf("no welcome email was sent to %s", toAddress)
+	})
+}
+```
+
+`i.Helper()` keeps a failure pointing at the test's line; the step is named after the verb, so the
+failure reads `inspect: WelcomeEmailSent: no welcome email was sent to …`.
+
+</TabItem>
+</Tabs>
+
+## 4. Write the test
+
+Now the test reads as Arrange → Act → Inspect. (This one needs no arrange.)
+
+<Tabs syncKey="lang">
+<TabItem label="C#">
+```csharp
+[Fact]
+public async Task Registering_a_user_sends_a_welcome_email()
+{
+    var stage = await NewStage();
+
+    // ACT — the Act phase resolves the service, runs the one thing under test, and returns its result.
+    var id = await stage.Act().Returning(host =>
+        host.ExecuteAsync<SignupService, Guid>(service => service.Register("acme@example.com")));
+
+    // INSPECT — observe the outcome through your vocabulary.
+    await stage.Inspect()
+        .WelcomeEmailSent("acme@example.com");
+
+    Assert.NotEqual(Guid.Empty, id);
+}
+```
+</TabItem>
+<TabItem label="Go">
+```go
+func TestRegisteringAUserSendsAWelcomeEmail(t *testing.T) {
+	f := composition.Enter[Arrange, Act, Inspect](t)
+
+	// ACT — chains are eager: the verb has run by the time it returns, so an
+	// Act verb simply hands back its result.
+	id := f.Act().Register("acme@example.com")
+
+	// INSPECT — observe the outcome through your vocabulary.
+	f.Inspect().WelcomeEmailSent("acme@example.com")
+
+	if id == uuid.Nil {
+		t.Error("want a generated id")
+	}
+}
+```
+
+`Enter` opens a stage for the test and hands back a **fixture** typed with the suite's own phases, so
+the body reads `f.Arrange()` / `f.Act()` / `f.Inspect()`. A suite usually wraps that one line in a
+`newFixture(t)` — see [Building your test vocabulary](/concepts/vocabulary/).
+
+</TabItem>
+</Tabs>
+
+:::note[Act is a phase too]
+`stage.Act()` starts the Act phase, symmetric with `Arrange` and `Inspect`. `.Returning(...)` is the flavor
+that hands a result back; there are also void and capture flavors. In a real project you'd wrap this in an
+**Act verb** — `await Act.RegisterUser("acme@example.com")` — exactly like the Inspect verb above. See
+[Arrange / Act / Inspect](/concepts/aai/#act).
+:::
+
+## What just happened
+
+- Composing (`TestStageSetup.Create(...)` / `mokkit.NewSetup(...)`) built your containers once;
+  entering a stage gave the test a fresh, isolated world.
+- The **Act** phase resolved the service from the stage, ran the one thing under test, and handed back
+  its result.
+- Your **Inspect** verb resolved the same double from the stage and observed the call.
+
+The verb `WelcomeEmailSent` is the seed of your project's **vocabulary**. As you add
+`Arrange` verbs (to set up state) and more `Inspect` verbs (to observe it), tests become short, readable
+compositions of sentences — with full IDE and compile-time support.
+
+## Next
+
+- **[Arrange / Act / Inspect](/concepts/aai/)** — the mechanics of each phase.
+- **[Building your test vocabulary](/concepts/vocabulary/)** — the idea Mokkit is built around.
