@@ -114,23 +114,24 @@ is unchanged. Same Mokkit primitives throughout — only the surrounding stack c
 
 ## The Go layout
 
-One test package per system-under-test, colocated with it; the suite files follow the strict placement
-rule from the [conventions](/reference/conventions/):
+One test package per system-under-test, colocated with it; the suite files follow the placement rule
+from the [conventions](/reference/conventions/):
 
 ```
 internal/billing/
     service.go
     service_test.go          # tests only
     fixture_test.go          # TestMain, composition, fixture, tokens — no verbs
-    arrange_test.go          # Arrange verbs
-    act_test.go              # Act verbs
-    inspect_test.go          # Inspect verbs + plain-function Steps
+    vocabulary_test.go       # the verbs, in Arrange, Act and Inspect sections
     fakes_test.go            # hand doubles, when not generated
 tests/
     harness/                 # a real package: containers, migrations, stack bring-up
     integration/<feature>/   # suites over real infrastructure
     e2e/                     # the whole application, driven over HTTP
 ```
+
+The vocabulary splits by phase (`arrange_test.go`, `act_test.go`, `inspect_test.go`) once it is a few
+hundred lines, and a suite of a handful of tests may keep fixture and vocabulary in one `suite_test.go`.
 
 Two Go-specific notes: the shared **harness** is a normal (non-`_test`) package so several suites can use
 it, and generated mocks live next to the interface they double (`mocks_test.go` in the package, or an

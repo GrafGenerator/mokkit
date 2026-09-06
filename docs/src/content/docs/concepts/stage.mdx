@@ -39,11 +39,14 @@ stage.Dispose();
 setup, err := mokkit.NewSetup(context.Background(), mocks, app)
 
 // Per test. Cleanup is registered with t automatically.
-stage := setup.EnterStage(t)
+f := setup.Enter[Arrange, Act, Inspect](t)
+
+// Or, when the subject is cheap to build, compose and enter per test in one call.
+f := mokkit.Enter[Arrange, Act, Inspect](t, mocks, app)
 ```
 
-`EnterStage(t)` registers the stage's release with `t.Cleanup`, so there is nothing to dispose by hand; a
-scoped service that implements `io.Closer` is closed when the stage ends.
+`Enter` opens a stage, registers its release with `t.Cleanup`, and hands back a `mokkit.Fixture` typed
+with the suite's phases; a scoped service that implements `io.Closer` is closed when the stage ends.
 
 </TabItem>
 </Tabs>
@@ -69,17 +72,18 @@ stage.ExecuteAsync<TService, TOut>(svc => ...);   // resolve, run, return a resu
 </TabItem>
 <TabItem label="Go">
 ```go
-stage.Arrange()   // *mokkit.Chain — fails hard
-stage.Act()       // *mokkit.Chain — fails hard
-stage.Inspect()   // *mokkit.Chain — fails soft
+f.Arrange()   // the suite's Arrange — fails hard
+f.Act()       // the suite's Act     — fails hard
+f.Inspect()   // the suite's Inspect — fails soft
 
-mokkit.Resolve[*SignupService](stage)   // resolve straight off the stage
-stage.Tokens()                          // the per-test artifact registry
+f.Of[Buyer]()                             // the per-test artifact registry, promoted onto the fixture
+mokkit.Resolve[*SignupService](f.Stage)   // resolve straight off the stage
 ```
 
-Inside a step, `h.Resolve[T]()` does the resolving; a small per-suite **fixture** embeds
-`stage.Tokens()` so tests read `f.Of[Buyer]()`. Stages can also be observed — every step, with phase,
-name, duration and outcome — which is how the [Allure reporter](/guides/reporting-allure/) works.
+`mokkit.Fixture[A, C, I]` is generic over the three phase types, so the phases come back as the suite's
+own vocabulary; inside a step, `h.Resolve[T]()` does the resolving. Stages can also be observed —
+every step, with phase, name, duration and outcome — which is how the
+[Allure reporter](/guides/reporting-allure/) works.
 
 </TabItem>
 </Tabs>

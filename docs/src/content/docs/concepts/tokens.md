@@ -50,8 +50,8 @@ discount_test.go:23: mokkit: nothing arranged for main_test.Ghost (have: main_te
   `func (a Arrange) UserExists[K mokkit.Token[User]](...)` will not accept `Cart`, because `Cart`'s
   token declares an `Order`. The role/artifact pairing is enforced by the constraint, not remembered by
   the reader.
-- The role lands in the **step label** — `arrange: UserExists[Buyer]` — via `mokkit.NameOf[K]()`, so a
-  failure names the actor it was acting for.
+- The role lands in the **step label** — `arrange: UserExists[Buyer]` — through the `For` form of the
+  step runners (`DoFor[K]`, `GetFor[K]`, `TryFor[K]`), so a failure names the actor it was acting for.
 
 ## Verbs generic over the token
 
@@ -61,15 +61,12 @@ chain never breaks to get an artifact out:
 ```go
 func (a Arrange) UserExists[K mokkit.Token[User]](s Status) Arrange {
 	a.Helper()
-	a.Add("UserExists["+mokkit.NameOf[K]()+"]", func(ctx context.Context, h mokkit.Host) error {
+
+	return mokkit.DoFor[K](a, func(h mokkit.Host) {
 		u := newUser(mokkit.NameOf[K](), s)
 		*a.New[K]() = u
 		h.Resolve[*fakeUsers]().add(u)
-
-		return nil
 	})
-
-	return a
 }
 ```
 

@@ -87,8 +87,9 @@ fills it. See [Capture vs Trapture](/concepts/captures/).
 ```go
 func (a Arrange) NewClient[K mokkit.Token[Client]](fields ...ClientField) Arrange {
 	a.Helper()
-	a.Add("NewClient["+mokkit.NameOf[K]()+"]", func(ctx context.Context, h mokkit.Host) error {
-		result, err := createClient(ctx, h.Resolve[*http.Client](), build(fields...))
+
+	return mokkit.DoFor[K](a, func(h mokkit.Host) error {
+		result, err := createClient(h.Context(), h.Resolve[*http.Client](), build(fields...))
 		if err != nil {
 			return err
 		}
@@ -97,14 +98,12 @@ func (a Arrange) NewClient[K mokkit.Token[Client]](fields ...ClientField) Arrang
 
 		return nil
 	})
-
-	return a
 }
 ```
 
 The token `K` is how verbs pass data to each other: `NewClient` files the client under the role, and any
-later verb or assertion reads it back with `Of`. The chain stays whole, and the step label carries the
-role. See [Tokens](/concepts/tokens/).
+later verb or assertion reads it back with `Of`. The chain stays whole, and `DoFor[K]` puts the role in
+the step label: `arrange: NewClient[Buyer]`. See [Tokens](/concepts/tokens/).
 
 </TabItem>
 </Tabs>
@@ -149,31 +148,35 @@ public static ITestAct ProduceStatusChanged(this ITestAct act, Guid clientId, St
 </TabItem>
 <TabItem label="Go">
 ```go
-// Return — eager chains mean the verb simply returns its result.
+// Return — Get runs the step and hands the result back; an error fails the act.
 func (a Act) UpdateClient(id string, fields ...ClientField) WriteResult {
 	a.Helper()
 
-	var out WriteResult
-	a.Add("UpdateClient", func(ctx context.Context, h mokkit.Host) error {
-		var err error
-		out, err = updateClient(ctx, h.Resolve[*http.Client](), id, build(fields...))
-
-		return err
+	return a.Get(func(h mokkit.Host) (WriteResult, error) {
+		return updateClient(h.Context(), h.Resolve[*http.Client](), id, build(fields...))
 	})
+}
 
-	return out
+// Outcome — Try hands back the value and the error together, for a test about a refusal.
+func (a Act) TryUpdateClient(id string, fields ...ClientField) mokkit.Outcome[WriteResult] {
+	a.Helper()
+
+	return a.Try(func(h mokkit.Host) (WriteResult, error) {
+		return updateClient(h.Context(), h.Resolve[*http.Client](), id, build(fields...))
+	})
 }
 
 // Void — fire the operation; its effects surface downstream in Inspect.
 func (a Act) ProduceStatusChanged(id string, msg StatusChanged) Act {
 	a.Helper()
-	a.Add("ProduceStatusChanged", func(ctx context.Context, h mokkit.Host) error {
-		return h.Resolve[Producer]().Produce(ctx, "clients.status-changed", serialize(id, msg))
-	})
 
-	return a
+	return mokkit.Do(a, func(h mokkit.Host) error {
+		return h.Resolve[Producer]().Produce(h.Context(), "clients.status-changed", serialize(id, msg))
+	})
 }
 ```
+
+`Attempt` is `Try` for an operation that returns only an error.
 </TabItem>
 </Tabs>
 
@@ -205,20 +208,20 @@ public static ITestInspect EventPublished(this ITestInspect inspect, string topi
 ```go
 func (i Inspect) EventPublished(topic, clientID string) Inspect {
 	i.Helper()
-	i.Add("EventPublished", func(ctx context.Context, h mokkit.Host) error {
+
+	return mokkit.Do(i, func(h mokkit.Host) error {
 		if !h.Resolve[*KafkaProbe]().SawMessageKeyed(topic, clientID) {
 			return fmt.Errorf("no %s message keyed %s", topic, clientID)
 		}
 
 		return nil
 	})
-
-	return i
 }
 ```
 
 A verb's first line is `i.Helper()`, so a failure reports the test's line rather than the verb's body.
-A step reports by returning an error, never by failing the test directly.
+A step reports by returning an error, never by failing the test directly. The step is named after the
+verb; `DoAs` takes a name, and `Do` also accepts a `mokkit.Step` published by another package.
 
 </TabItem>
 </Tabs>
@@ -245,12 +248,14 @@ Keep vocabulary next to what it describes, and out of the files where the tests 
 colocated `Arrange<Feature>.cs` / `Inspect<Feature>.cs` files per feature; in Go:
 
 ```
-fixture_test.go     composition, tokens, the fixture. No verbs.
-arrange_test.go     Arrange verbs
-act_test.go         Act verbs
-inspect_test.go     Inspect verbs, and the plain-function Steps And/All take
+fixture_test.go     composition and the fixture. No verbs.
+vocabulary_test.go  the verbs, in Arrange, Act and Inspect sections
 <feature>_test.go   tests — and nothing else
 ```
+
+A suite of a handful of tests may keep the fixture and the vocabulary in one `suite_test.go`; a
+vocabulary past a few hundred lines splits by phase (`arrange_test.go`, `act_test.go`,
+`inspect_test.go`), and a phase splits by feature when it grows again.
 
 Keep verbs **atomic** — one named condition each — so a refusal-path test differs from the success
 path by exactly one verb. The

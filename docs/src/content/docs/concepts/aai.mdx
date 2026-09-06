@@ -111,22 +111,18 @@ type and simply hands the result back:
 func (a Act) SaveClient(cmd SaveCommand) SaveResult {
 	a.Helper()
 
-	var out SaveResult
-	a.Add("SaveClient", func(ctx context.Context, h mokkit.Host) error {
-		var err error
-		out, err = h.Resolve[*SaveClientHandler]().Handle(ctx, cmd)
-
-		return err
+	return a.Get(func(h mokkit.Host) (SaveResult, error) {
+		return h.Resolve[*SaveClientHandler]().Handle(h.Context(), cmd)
 	})
-
-	return out
 }
 
 // in the test:
 result := f.Act().SaveClient(cmd)
 ```
 
-Inside a step, `h.Resolve[T]()` pulls any collaborator from the stage. Act fails hard, like Arrange.
+Inside a step, `h.Resolve[T]()` pulls any collaborator from the stage. Act fails hard, like Arrange:
+`Get` fails the test on an error. A test about a refusal wants the error as its artifact, which is what
+`Try` hands back as an `Outcome[T]`, and `Attempt` for an operation that returns only an error.
 
 </TabItem>
 </Tabs>

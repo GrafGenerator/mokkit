@@ -97,7 +97,7 @@ var composition *mokkit.Setup
 
 func TestMain(m *testing.M) {
 	b := bag.New()
-	bag.Scoped(b, func(mokkit.Resolver) *fakeEmail { return &fakeEmail{} })
+	bag.Fresh[fakeEmail](b)
 	bag.Alias[EmailSender, *fakeEmail](b)
 	bag.Scoped(b, func(r mokkit.Resolver) *SignupService {
 		return &SignupService{Email: mokkit.Resolve[EmailSender](r)}
@@ -112,7 +112,7 @@ func TestMain(m *testing.M) {
 }
 ```
 
-`bag.Scoped` builds a fresh double per stage; `bag.Alias` makes one instance answer under both types.
+`bag.Fresh` builds a zero-value double per stage; `bag.Alias` makes one instance answer under both types.
 
 </TabItem>
 </Tabs>
@@ -145,29 +145,39 @@ public static class SignupVocabulary
 </TabItem>
 <TabItem label="Go">
 
-In Go, vocabulary is methods on your own type embedding `*mokkit.Chain`:
+In Go, vocabulary is methods on your own types embedding `*mokkit.Chain`. `mokkit.Do` runs the step and
+hands the type back; an Act verb returns its result through `Get`:
 
 ```go
-type Inspect struct{ *mokkit.Chain }
+type (
+	Arrange struct{ *mokkit.Chain }
+	Act     struct{ *mokkit.Chain }
+	Inspect struct{ *mokkit.Chain }
+)
+
+func (a Act) Register(address string) uuid.UUID {
+	a.Helper()
+
+	return a.Get(func(h mokkit.Host) (uuid.UUID, error) {
+		return h.Resolve[*SignupService]().Register(h.Context(), address)
+	})
+}
 
 func (i Inspect) WelcomeEmailSent(toAddress string) Inspect {
 	i.Helper()
-	i.Add("WelcomeEmailSent", func(_ context.Context, h mokkit.Host) error {
-		for _, sent := range h.Resolve[*fakeEmail]().sent {
-			if sent == toAddress {
-				return nil
-			}
+
+	return mokkit.Do(i, func(h mokkit.Host) error {
+		if slices.Contains(h.Resolve[*fakeEmail]().sent, toAddress) {
+			return nil
 		}
 
 		return fmt.Errorf("no welcome email was sent to %s", toAddress)
 	})
-
-	return i
 }
 ```
 
-`i.Helper()` is what keeps a failure pointing at the test's line, and returning the error — rather than
-failing directly — is what lets the chain report it under the phase and verb name.
+`i.Helper()` keeps a failure pointing at the test's line; the step is named after the verb, so the
+failure reads `inspect: WelcomeEmailSent: no welcome email was sent to …`.
 
 </TabItem>
 </Tabs>
@@ -199,15 +209,14 @@ public async Task Registering_a_user_sends_a_welcome_email()
 <TabItem label="Go">
 ```go
 func TestRegisteringAUserSendsAWelcomeEmail(t *testing.T) {
-	stage := composition.EnterStage(t)
+	f := composition.Enter[Arrange, Act, Inspect](t)
 
 	// ACT — chains are eager: the verb has run by the time it returns, so an
 	// Act verb simply hands back its result.
-	id := Act{stage.Act()}.Register("acme@example.com")
+	id := f.Act().Register("acme@example.com")
 
 	// INSPECT — observe the outcome through your vocabulary.
-	Inspect{stage.Inspect()}.
-		WelcomeEmailSent("acme@example.com")
+	f.Inspect().WelcomeEmailSent("acme@example.com")
 
 	if id == uuid.Nil {
 		t.Error("want a generated id")
@@ -215,8 +224,9 @@ func TestRegisteringAUserSendsAWelcomeEmail(t *testing.T) {
 }
 ```
 
-In a real suite a small **fixture** wraps `EnterStage` and hands out `f.Arrange()` / `f.Act()` /
-`f.Inspect()` — see [Building your test vocabulary](/concepts/vocabulary/).
+`Enter` opens a stage for the test and hands back a **fixture** typed with the suite's own phases, so
+the body reads `f.Arrange()` / `f.Act()` / `f.Inspect()`. A suite usually wraps that one line in a
+`newFixture(t)` — see [Building your test vocabulary](/concepts/vocabulary/).
 
 </TabItem>
 </Tabs>
